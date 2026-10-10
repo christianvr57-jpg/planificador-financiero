@@ -51,8 +51,8 @@ var PFAjustes = (function () {
       '<div class="fld"><span class="fld-l">Céntimos en el presupuesto</span>' + U.seg([{ id: 'auto', nombre: 'Automático' }, { id: 'si', nombre: 'Siempre' }, { id: 'no', nombre: 'Nunca' }], cent == null ? 'auto' : cent ? 'si' : 'no', { 'data-f': 'centimos' }, 'mini') +
       '<span class="fld-a">Automático: con pantallas de 1.680 px o más.</span></div></div></div>';
 
-    var copias = '<div class="card"><div class="card-h"><h3>Datos y copias de seguridad</h3></div>' +
-      '<p class="nota" style="margin-bottom:10px">Se guarda solo en este navegador (localStorage). Última copia: <b>' + h(c.s.meta.ultimaCopia ? F.fechaHora(c.s.meta.ultimaCopia) : 'nunca') + '</b>. Te avisaré si pasan más de 7 días sin copia.</p>' +
+    var copias = nube(c) + '<div class="card"><div class="card-h"><h3>Datos y copias de seguridad</h3></div>' +
+      '<p class="nota" style="margin-bottom:10px">Además de la nube, se guarda en este navegador. Última copia en archivo: <b>' + h(c.s.meta.ultimaCopia ? F.fechaHora(c.s.meta.ultimaCopia) : 'nunca') + '</b>. Te avisaré si pasan más de 7 días sin copia.</p>' +
       '<div class="fila-ctl">' +
       '<button type="button" class="btn sm prim" data-act="guardar-archivo">' + U.icono('guardar') + 'Guardar en archivo (Ctrl+S)</button>' +
       '<button type="button" class="btn sm" data-act="abrir-archivo">' + U.icono('abrir') + 'Abrir archivo</button>' +
@@ -64,11 +64,29 @@ var PFAjustes = (function () {
       '<button type="button" class="btn sm ghost" data-act="aj-iniciales">Restaurar datos iniciales</button></div>' +
       '<p class="fld-a" style="margin-top:6px">«Empezar de cero» deja un plan vacío; «Restaurar datos iniciales» vuelve a los datos con los que se creó el planificador.</p></div>';
 
-    var priv = '<div class="card"><div class="card-h"><h3>Privacidad</h3></div><p class="nota">Esta página funciona sin internet y no envía nada a ningún sitio: no hay analítica, ni fuentes ni librerías externas (Chart.js ' + (window.Chart ? h(Chart.version) : '') + ' va incluido en la carpeta <code>lib</code>). ' +
-      'Además, la página declara una política de seguridad (CSP) que impide al navegador hacer conexiones de red.</p>' +
+    var priv = '<div class="card"><div class="card-h"><h3>Privacidad</h3></div><p class="nota">Sin analítica, ni fuentes ni librerías externas (Chart.js ' + (window.Chart ? h(Chart.version) : '') + ' va incluido en la carpeta <code>lib</code>). ' +
+      'La única conexión permitida (política CSP) es la API de GitHub para la nube. El repositorio es público: cualquiera puede ver los datos guardados en la nube.</p>' +
       '<p class="nota" style="margin-top:8px">Datos: versión de esquema ' + s.version + ' · ' + s.orden.length + ' escenarios · ' + s.seguimiento.length + ' meses de seguimiento. <button type="button" class="btn-link" data-act="atajos">Atajos de teclado</button></p></div>';
 
     return '<div class="rejilla r2">' + '<div>' + plan + hip + rent + '</div><div>' + copias + irpf + apariencia + priv + '</div></div>';
+  }
+  function nube(c) {
+    var n = PFNube.estado(), F2 = F;
+    var estadoTxt = { ok: 'Sincronizado', sync: n.msg, pendiente: n.msg, lectura: 'Solo lectura: falta el token', vacio: 'La nube está vacía', error: n.msg, conflicto: n.msg }[n.fase] || 'Conectando…';
+    return '<div class="card" data-form="nube"><div class="card-h"><h3>Nube (GitHub)</h3><span class="sub">' + h(n.owner + '/' + n.repo) + ' · rama «' + h(n.rama) + '»</span></div>' +
+      '<p class="nota" style="margin-bottom:10px">Estado: <b class="' + (n.fase === 'ok' ? 'pos' : n.fase === 'error' || n.fase === 'conflicto' ? 'neg' : '') + '">' + h(estadoTxt) + '</b>' +
+      (n.ultima ? ' · última sincronización ' + h(F2.fechaHora(n.ultima)) : '') + '. Cada cambio se guarda en la nube a los 2 segundos; al abrir la página o volver a la pestaña se cargan los cambios hechos en otro PC.</p>' +
+      (n.conectado
+        ? '<div class="fila-ctl"><span class="ok">' + U.icono('ok') + ' Token guardado en este navegador</span><span class="sp"></span>' +
+          '<button type="button" class="btn sm" data-act="nube-sync">Sincronizar ahora</button>' +
+          '<button type="button" class="btn sm ghost peligro" data-act="nube-salir">Quitar token</button></div>'
+        : '<div class="fila-ctl"><input class="in" type="password" id="nube-token" placeholder="Pega aquí tu token (github_pat_…)" autocomplete="off" style="flex:1;min-width:220px" aria-label="Token de GitHub">' +
+          '<button type="button" class="btn sm prim" data-act="nube-conectar">Conectar</button></div>' +
+          '<ol class="nota pasos"><li>Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub › Fine-grained token</a> (con tu sesión iniciada).</li>' +
+          '<li>Nombre: «planificador»; caducidad: la que quieras. <b>Repository access</b>: «Only select repositories» › <b>' + h(n.repo) + '</b>.</li>' +
+          '<li><b>Permissions › Repository permissions › Contents: Read and write</b>. Genera el token y pégalo arriba.</li>' +
+          '<li>Repite el paso de pegar el token en cada PC o navegador que uses (solo se guarda en ese navegador).</li></ol>') +
+      '<p class="fld-a" style="margin-top:8px"><a href="' + h(n.historial) + '" target="_blank" rel="noopener">Ver el historial de versiones en GitHub</a> · el token nunca se incluye en las copias ni se sube.</p></div>';
   }
   function campoPct(etq, f, v, ayuda) {
     return '<div class="fld"><span class="fld-l">' + etq + '</span><div class="fila-ctl">' + U.campoPct(f, v, 1, ' style="width:80px"') + '<span class="muted">%</span></div>' + (ayuda ? '<span class="fld-a">' + ayuda + '</span>' : '') + '</div>';
@@ -79,6 +97,19 @@ var PFAjustes = (function () {
     return false;
   }
   function enlazar() {
+    U.accion('nube-conectar', function () {
+      var t = document.getElementById('nube-token').value.trim();
+      if (!t) { U.toast('Pega primero el token.', { tipo: 'error' }); return; }
+      PFNube.conectar(t).then(function (ok) {
+        if (ok) U.toast('Nube conectada: tus cambios se guardarán en GitHub.');
+        else { PFNube.desconectar(); U.toast(PFNube.estado().msg || 'No se pudo conectar.', { tipo: 'error', ms: 7000 }); }
+      });
+    });
+    U.accion('nube-sync', function () { PFNube.bajar().then(function () { if (PFNube.estado().pendiente) PFNube.subir(); }); });
+    U.accion('nube-salir', function () {
+      U.confirmar({ titulo: 'Quitar el token de este navegador', texto: 'Seguirás viendo los datos de la nube, pero lo que cambies aquí no se guardará en ella.', ok: 'Quitar token', peligro: true })
+        .then(function (ok) { if (ok) PFNube.desconectar(); });
+    });
     U.formulario('aj-plan', function (id, campo, v) {
       if (campo === 'inicio' && v) PFStore.update(function (s, e) { e.inicio = v; }, { etiqueta: 'mes de inicio' });
     });

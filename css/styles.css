@@ -609,3 +609,11 @@ code { font-size: 12px; background: var(--surface-3); padding: 0 4px; border-rad
 .bt tr.drop-antes th, .bt tr.drop-antes td { box-shadow: inset 0 2px 0 var(--accent) !important; }
 .bt tr.drop-despues th, .bt tr.drop-despues td { box-shadow: inset 0 -2px 0 var(--accent) !important; }
 .bt tr.drop-en th, .bt tr.drop-en td { background: var(--accent-soft) !important; box-shadow: inset 0 0 0 1px var(--accent) !important; }
+
+/* Nube */
+.sb-nube { display: flex; align-items: flex-start; gap: 4px; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; font-size: 11.5px; line-height: 1.35; color: var(--ink-3); }
+.sb-nube.ok { color: var(--pos); } .sb-nube.warn { color: var(--warn); } .sb-nube.neg { color: var(--neg); }
+.sb-nube .ico { width: 12px; height: 12px; margin-top: 1px; }
+.sb-nube:hover { text-decoration: underline; }
+ol.pasos { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.nota a, .fld-a a { color: var(--accent); }

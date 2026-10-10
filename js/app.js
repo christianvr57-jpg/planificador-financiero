@@ -109,7 +109,7 @@ var PFApp = (function () {
       '<label class="sb-l" for="sel-esc">Escenario</label>' +
       '<select id="sel-esc" class="in" data-f="escenario" data-t="sel" data-value="' + h(c.s.escenarioActivo) + '">' + U.opcionesSelect(esc, c.s.escenarioActivo) + '</select>' +
       '</div>' +
-      '<div class="sb-bloque sb-estado">' + est + '<span class="' + (dias > 7 ? 'warn' : '') + '">' + h(copia) + '</span>' +
+      '<div class="sb-bloque sb-estado">' + est + htmlNube() + '<span class="' + (dias > 7 ? 'warn' : '') + '">' + h(copia) + '</span>' +
       (PFStore.nombreArchivoActual() ? '<span class="muted">Archivo: ' + h(PFStore.nombreArchivoActual()) + '</span>' : '') + '</div>' +
       '<div class="sb-acc">' +
       '<button type="button" class="btn sm" data-act="guardar-archivo" data-tip="Guardar en archivo (Ctrl+S)">' + U.icono('guardar') + 'Guardar</button>' +
@@ -118,7 +118,23 @@ var PFApp = (function () {
       '<div class="sb-pie">' +
       '<button type="button" class="btn ghost sm" data-act="tema" data-tip="Cambiar a tema ' + (oscuro ? 'claro' : 'oscuro') + '">' + U.icono(oscuro ? 'sol' : 'luna') + (oscuro ? 'Tema claro' : 'Tema oscuro') + '</button>' +
       '<button type="button" class="btn ghost sm" data-act="atajos" data-tip="Atajos de teclado (?)">?</button>' +
-      '<p class="sb-priv">' + U.icono('candado') + 'Tus datos no salen de este PC.</p></div>';
+      '<p class="sb-priv">' + U.icono('candado') + (window.PFNube && PFNube.estado().conectado ? 'Sincronizado con GitHub.' : 'Sin token: lo que cambies se queda en este PC.') + '</p></div>';
+  }
+
+  /** Estado de la sincronización con la nube para la barra lateral. */
+  function htmlNube() {
+    if (!window.PFNube) return '';
+    var n = PFNube.estado(), hora = n.ultima ? new Date(n.ultima).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+    var txt, cls = 'muted', ico = 'info';
+    switch (n.fase) {
+      case 'ok': txt = 'Nube: sincronizado' + (hora ? ' · ' + hora : ''); cls = 'ok'; ico = 'ok'; break;
+      case 'sync': case 'pendiente': txt = 'Nube: ' + (n.msg || 'guardando…').replace(/^\w/, function (x) { return x.toLowerCase(); }); break;
+      case 'lectura': txt = n.pendiente ? 'Nube: cambios solo en este PC (falta el token)' : 'Nube: solo lectura (falta el token)'; cls = 'warn'; ico = 'alerta'; break;
+      case 'vacio': txt = 'Nube: vacía (añade el token para subir)'; cls = 'warn'; ico = 'alerta'; break;
+      case 'error': case 'conflicto': txt = 'Nube: ' + n.msg; cls = 'neg'; ico = 'alerta'; break;
+      default: txt = 'Nube: conectando…';
+    }
+    return '<button type="button" class="sb-nube ' + cls + '" data-act="nav" data-sec="ajustes" data-tip="Configurar la nube en Ajustes">' + U.icono(ico) + h(txt) + '</button>';
   }
 
   // ------------------------------------------------------------ Cabecera ---
@@ -300,12 +316,15 @@ var PFApp = (function () {
     enlazarTeclado();
     PFStore.on(function (o) {
       if (o.silencioso) { U.morph(document.getElementById('sidebar'), htmlSidebar(ctx())); return; }
+      // Todo cambio del plan (no de interfaz ni el que llega de la nube) se sube a la nube
+      if (!o.ui && !o.nube && !o.copia && window.PFNube) PFNube.alCambiar();
       render();
     });
     if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { temaAplicado = undefined; render(); });
     window.addEventListener('resize', function () { render(); });
     if (PFStore.info.error) U.toast(PFStore.info.error, { tipo: 'error', ms: 8000 });
     renderAhora();
+    if (window.PFNube) PFNube.iniciar();
   }
 
   return { iniciar: iniciar, render: render, renderAhora: renderAhora, ctx: ctx, invalidar: invalidar, irA: irA, SECCIONES: SECCIONES, temaEfectivo: temaEfectivo };

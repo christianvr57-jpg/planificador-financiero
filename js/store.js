@@ -97,11 +97,11 @@ var PFStore = (function () {
     return paso.etiqueta;
   }
   /** Reemplaza todo el estado (importar). Se puede deshacer. */
-  function reemplazar(nuevo, etiqueta) {
+  function reemplazar(nuevo, etiqueta, opt) {
     deshacer.push({ json: JSON.stringify(estado), etiqueta: etiqueta || 'importar' });
     rehacer = [];
     estado = nuevo; info.revision++;
-    programarGuardado(); emitir({ reemplazo: true });
+    programarGuardado(); emitir(Object.assign({ reemplazo: true }, opt || {}));
   }
 
   // ------------------------------------------------------------ Guardado ---

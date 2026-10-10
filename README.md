@@ -2,9 +2,16 @@
 
 Web de una sola página para unificar ingresos, gastos, huchas, inversiones y deudas, y ver cómo cada decisión cambia el ahorro a 12 meses y el patrimonio a 10–40 años.
 
-**Abrir:** doble clic en `index.html`. Funciona sin servidor y sin internet (Chrome o Edge recomendados para «Guardar en archivo»).
+**Abrir:** https://christianvr57-jpg.github.io/planificador-financiero/ desde cualquier PC. También funciona con doble clic en `index.html` de una copia local.
 
-**Privacidad:** ningún dato sale del PC. Sin analítica ni recursos externos; Chart.js va incluido en `lib/`. Una política CSP impide al navegador hacer conexiones de red.
+**Nube:** cada cambio se guarda en `plan.json`, en la rama `datos` de este repositorio (cada guardado es un commit, así que el historial de la rama guarda todas las versiones). Al abrir la página, al volver a la pestaña y cada 30 s se cargan los cambios hechos en otro PC; si hay cambios en los dos sitios, la app pregunta con cuál quedarse.
+
+Para poder guardar en la nube, cada navegador necesita un token (leer no lo necesita):
+1. GitHub › Settings › Developer settings › Fine-grained tokens › *Generate new token* (https://github.com/settings/personal-access-tokens/new).
+2. *Repository access*: solo `planificador-financiero`. *Repository permissions* › **Contents: Read and write**.
+3. En la app: Ajustes › Nube (GitHub) › pega el token › Conectar. El token se queda solo en ese navegador y nunca se sube.
+
+**Privacidad:** el repositorio es público, así que los datos de la nube los puede ver cualquiera. Sin analítica ni recursos externos (Chart.js va incluido en `lib/`); la política CSP solo permite conectar con `api.github.com`.
 
 > Las proyecciones son estimaciones basadas en tus hipótesis, no garantías ni asesoramiento financiero personalizado.
 
@@ -34,7 +41,7 @@ En la tabla del presupuesto:
 
 ## Copias de seguridad
 
-Los datos se guardan automáticamente en el navegador. Si borras los datos del navegador, se pierden, así que:
+Además de la nube, los datos se guardan automáticamente en el navegador. Para tener copias propias:
 - **Guardar en archivo (Ctrl+S)** reescribe siempre el mismo archivo.
 - **Exportar JSON** descarga una copia con la fecha.
 
@@ -50,6 +57,7 @@ js/calc.js            motor financiero: funciones puras, sin DOM, exportable a N
 js/fmt.js             formato es-ES (1.234,56 €) y lectura de importes y sumas
 js/schema.js          esquema, valores por defecto, migraciones y datos iniciales
 js/store.js           estado, deshacer/rehacer, autoguardado, copias
+js/cloud.js           sincronización con GitHub (rama «datos»)
 js/whatif.js          modo ¿Y si…?
 js/ui-*.js, app.js    interfaz
 tests/run-tests.js    pruebas
