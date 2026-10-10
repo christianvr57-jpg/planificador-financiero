@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Privacidad: el navegador bloquea cualquier conexión de red (fetch, XHR, WebSocket, beacons). -->
+<meta http-equiv="Content-Security-Policy" content="connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Planificador financiero</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a63b8'/%3E%3Ctext x='16' y='23' font-family='Segoe UI,Arial' font-size='19' font-weight='700' fill='white' text-anchor='middle'%3E€%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<noscript><p style="padding:2rem">Esta página necesita JavaScript activado. Todo se ejecuta en tu ordenador: no se envía nada a internet.</p></noscript>
+<div class="app">
+  <aside id="sidebar" class="sidebar" aria-label="Navegación"></aside>
+  <main class="main">
+    <div class="cabecera">
+      <header id="topbar" class="topbar"></header>
+      <div id="whatif-bar"></div>
+      <div id="banners"></div>
+    </div>
+    <section id="vista" class="vista" aria-live="off"></section>
+    <footer class="pie-legal">Las proyecciones son estimaciones basadas en tus hipótesis, no garantías. No es asesoramiento financiero personalizado.</footer>
+  </main>
+  <aside id="drawer" class="drawer" hidden></aside>
+</div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<div id="tip" class="tip" role="tooltip" hidden></div>
+
+<script src="lib/chart.umd.min.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/fmt.js"></script>
+<script src="js/schema.js"></script>
+<script src="js/store.js"></script>
+<script src="js/whatif.js"></script>
+<script src="js/ui-core.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ui-editor.js"></script>
+<script src="js/ui-budget.js"></script>
+<script src="js/ui-summary.js"></script>
+<script src="js/ui-invest.js"></script>
+<script src="js/ui-debts.js"></script>
+<script src="js/ui-goals.js"></script>
+<script src="js/ui-networth.js"></script>
+<script src="js/ui-scenarios.js"></script>
+<script src="js/ui-settings.js"></script>
+<script>PFApp.iniciar();</script>
+</body>
+</html>

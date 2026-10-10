@@ -1,0 +1,6 @@
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+# Copias de datos personales exportadas desde la app
+planificador-*.json
