@@ -56,7 +56,7 @@
       "inicio": "2026-10",
       "hipotesis": {
         "inflacion": 0.022,
-        "subidaSalarial": 0.03,
+        "subidaSalarial": 0.038,
         "pctExcedente": 0,
         "destinoExcedente": "imv2x5gxx2gu6u",
         "destinoLiberadas": "caja",
@@ -775,7 +775,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:03:28.763Z",
+    "modificado": "2026-10-11T21:04:47.745Z",
     "ultimaCopia": "2026-10-11T21:03:05.623Z"
   }
 }
