@@ -601,7 +601,7 @@
           "tipo": "gasto",
           "grupo": "fijos",
           "categoria": "Vivienda",
-          "importe": 0,
+          "importe": 8400,
           "frecuencia": "mensual",
           "mesCargo": 10,
           "fecha": null,
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T20:21:38.467Z",
+    "modificado": "2026-10-11T20:21:44.026Z",
     "ultimaCopia": null
   }
 }
