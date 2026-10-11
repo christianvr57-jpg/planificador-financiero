@@ -720,7 +720,7 @@
           "extraMensual": 9000,
           "extraDesde": "2026-11",
           "extraHasta": null,
-          "extraActiva": false,
+          "extraActiva": true,
           "extraPuntuales": [],
           "modo": "plazo",
           "inversionVinculada": null,
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:02:54.327Z",
+    "modificado": "2026-10-11T21:02:57.202Z",
     "ultimaCopia": null
   }
 }
