@@ -651,7 +651,7 @@
           "id": "hmv2zgrt31bdke1",
           "nombre": "Gastos previstos",
           "tipo": "hucha",
-          "aportacion": 7000,
+          "aportacion": 10000,
           "aportacionOtros": 0,
           "saldoInicial": 0,
           "objetivo": null,
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T20:31:02.526Z",
+    "modificado": "2026-10-11T20:31:49.279Z",
     "ultimaCopia": null
   }
 }
