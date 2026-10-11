@@ -717,7 +717,7 @@
           "proximaCuota": "2026-11",
           "comision": 0.01,
           "comisionUltimoAnio": 0.005,
-          "extraMensual": 17500,
+          "extraMensual": 9000,
           "extraDesde": "2026-11",
           "extraHasta": null,
           "extraActiva": true,
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T20:29:18.000Z",
+    "modificado": "2026-10-11T20:31:02.526Z",
     "ultimaCopia": null
   }
 }
