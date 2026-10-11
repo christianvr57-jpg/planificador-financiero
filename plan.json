@@ -715,7 +715,7 @@
           "extraordinarias": [],
           "rent": {
             "pes": -0.1,
-            "base": 0.07,
+            "base": 0.077,
             "opt": 0.15
           },
           "ter": 0,
@@ -775,7 +775,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:06:32.966Z",
+    "modificado": "2026-10-11T21:07:00.692Z",
     "ultimaCopia": "2026-10-11T21:03:05.623Z"
   }
 }
