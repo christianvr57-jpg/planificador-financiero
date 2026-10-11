@@ -597,7 +597,7 @@
         },
         {
           "id": "pmv49qhc80w81z",
-          "nombre": "Nuevo gasto",
+          "nombre": "Comunidad Xuxan",
           "tipo": "gasto",
           "grupo": "fijos",
           "categoria": "Vivienda",
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T20:21:19.304Z",
+    "modificado": "2026-10-11T20:21:38.467Z",
     "ultimaCopia": null
   }
 }
