@@ -680,7 +680,7 @@
           },
           "ter": 0.0004,
           "liquida": false,
-          "activa": true,
+          "activa": false,
           "ajustes": {},
           "notas": "TER supuesto 0,30 % (desconocido): el alto del rango habitual para no sobreestimar."
         },
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:01:51.299Z",
+    "modificado": "2026-10-11T21:01:53.351Z",
     "ultimaCopia": null
   }
 }
