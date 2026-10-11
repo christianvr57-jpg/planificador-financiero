@@ -594,6 +594,26 @@
           "pagadoDesde": "hmv2zgrt31bdke1",
           "ajustes": {},
           "notas": ""
+        },
+        {
+          "id": "pmv49qhc80w81z",
+          "nombre": "Nuevo gasto",
+          "tipo": "gasto",
+          "grupo": "fijos",
+          "categoria": "Vivienda",
+          "importe": 0,
+          "frecuencia": "mensual",
+          "mesCargo": 10,
+          "fecha": null,
+          "inicio": null,
+          "fin": null,
+          "activa": true,
+          "esencial": true,
+          "miParte": 1,
+          "subida": null,
+          "pagadoDesde": null,
+          "ajustes": {},
+          "notas": ""
         }
       ],
       "huchas": [
@@ -735,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-10T22:57:49.154Z",
+    "modificado": "2026-10-11T20:21:19.304Z",
     "ultimaCopia": null
   }
 }
