@@ -614,6 +614,26 @@
           "pagadoDesde": "hmv2zgrt31bdke1",
           "ajustes": {},
           "notas": ""
+        },
+        {
+          "id": "pmv4b8p2y0yutm",
+          "nombre": "Nuevo gasto",
+          "tipo": "gasto",
+          "grupo": "variables",
+          "categoria": "Otros",
+          "importe": 0,
+          "frecuencia": "mensual",
+          "mesCargo": 10,
+          "fecha": null,
+          "inicio": null,
+          "fin": null,
+          "activa": true,
+          "esencial": false,
+          "miParte": 1,
+          "subida": null,
+          "pagadoDesde": null,
+          "ajustes": {},
+          "notas": ""
         }
       ],
       "huchas": [
@@ -755,7 +775,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:02:57.202Z",
-    "ultimaCopia": null
+    "modificado": "2026-10-11T21:03:28.763Z",
+    "ultimaCopia": "2026-10-11T21:03:05.623Z"
   }
 }
