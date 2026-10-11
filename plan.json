@@ -687,16 +687,16 @@
         {
           "id": "imv2x5gxx2gu6u",
           "nombre": "Fondo indexado MSCI World",
-          "clase": "cripto",
+          "clase": "indexado",
           "valor": 40652,
           "aportado": 39000,
           "aportacion": 10000,
           "crecimiento": 0.03,
           "extraordinarias": [],
           "rent": {
-            "pes": -0.1,
-            "base": 0.03,
-            "opt": 0.15
+            "pes": 0.04,
+            "base": 0.07,
+            "opt": 0.1
           },
           "ter": 0.0004,
           "liquida": false,
@@ -775,7 +775,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:06:05.665Z",
+    "modificado": "2026-10-11T21:06:10.919Z",
     "ultimaCopia": "2026-10-11T21:03:05.623Z"
   }
 }
