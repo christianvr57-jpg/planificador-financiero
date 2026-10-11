@@ -709,7 +709,7 @@
         {
           "id": "dmv2x5gxzp8q5e",
           "nombre": "Préstamo personal",
-          "capital": 695700,
+          "capital": 0,
           "tin": 0.0949,
           "cuota": 20740,
           "plazo": null,
@@ -1455,7 +1455,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T20:24:46.692Z",
+    "modificado": "2026-10-11T20:24:49.974Z",
     "ultimaCopia": null
   }
 }
