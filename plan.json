@@ -648,7 +648,7 @@
           "fechaObjetivo": null,
           "inicio": null,
           "fin": null,
-          "activa": false,
+          "activa": true,
           "ajustes": {},
           "notas": "Separada del ocio. Supuesto: saldo actual 0 €."
         },
@@ -775,7 +775,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:07:15.480Z",
+    "modificado": "2026-10-11T21:07:22.031Z",
     "ultimaCopia": "2026-10-11T21:03:05.623Z"
   }
 }
