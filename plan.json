@@ -62,7 +62,7 @@
         "destinoLiberadas": "caja",
         "invLiberadas": "imv2x5gxx2gu6u",
         "ordenDeudas": "avalancha",
-        "escenarioRent": "opt",
+        "escenarioRent": "base",
         "horizonte": 40,
         "rentDefecto": 0.07
       },
@@ -775,7 +775,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:05:17.277Z",
+    "modificado": "2026-10-11T21:05:19.001Z",
     "ultimaCopia": "2026-10-11T21:03:05.623Z"
   }
 }
