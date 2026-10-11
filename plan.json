@@ -447,7 +447,7 @@
           "fecha": null,
           "inicio": null,
           "fin": null,
-          "activa": false,
+          "activa": true,
           "esencial": false,
           "miParte": 1,
           "subida": null,
@@ -547,7 +547,7 @@
           "fecha": null,
           "inicio": null,
           "fin": null,
-          "activa": true,
+          "activa": false,
           "esencial": false,
           "miParte": 1,
           "subida": null,
@@ -755,7 +755,7 @@
   "seguimiento": [],
   "meta": {
     "creado": "2026-10-10T21:41:17.447Z",
-    "modificado": "2026-10-11T21:01:59.987Z",
+    "modificado": "2026-10-11T21:02:07.005Z",
     "ultimaCopia": null
   }
 }
