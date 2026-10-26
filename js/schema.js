@@ -7,7 +7,7 @@
    ============================================================================= */
 var PFSchema = (function () {
   'use strict';
-  var VERSION = 2;
+  var VERSION = 3;
   var APP = 'planificador-financiero';
 
   var GRUPOS = [
@@ -239,7 +239,34 @@ var PFSchema = (function () {
     out.seguimiento = (Array.isArray(s.seguimiento) ? s.seguimiento : []).filter(function (r) { return r && mes(r.mes); }).map(function (r) {
       return { mes: r.mes, liquido: int(r.liquido), huchas: int(r.huchas), inversiones: int(r.inversiones), deudas: int(r.deudas), otros: int(r.otros), nota: str(r.nota) };
     }).sort(function (a, b) { return a.mes < b.mes ? -1 : 1; });
+    out.compartido = compartido(s.compartido);
     return out;
+  }
+
+  // ------------------------------------------------- Gastos compartidos ---
+  var CATEGORIAS_COMPARTIDO = ['Supermercado', 'Restaurantes', 'Casa', 'Suministros', 'Hijo', 'Perro', 'Ocio', 'Viajes',
+    'Transporte', 'Salud', 'Regalos', 'Compras', 'Otros'];
+  function fechaDia(x) { return (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x)) ? x : null; }
+  function compartido(o) {
+    o = o || {};
+    var personas = (Array.isArray(o.personas) && o.personas.length >= 2 ? o.personas : [{ id: 'yo', nombre: 'Yo' }, { id: 'pareja', nombre: 'Mi pareja' }])
+      .map(function (p) { return { id: str(p.id) || uid('u'), nombre: str(p.nombre, 'Persona').trim() || 'Persona' }; });
+    var ids = {}; personas.forEach(function (p) { ids[p.id] = 1; });
+    var yo = ids[o.yo] ? o.yo : personas[0].id;
+    var movimientos = (Array.isArray(o.movimientos) ? o.movimientos : []).filter(function (m) { return m && fechaDia(m.fecha) && ids[m.pagadoPor]; }).map(function (m) {
+      var tipo = ['gasto', 'reembolso', 'ingreso'].indexOf(m.tipo) >= 0 ? m.tipo : 'gasto';
+      var r = m.reparto || {}, partes = {};
+      if (r.partes) for (var k in r.partes) if (ids[k]) partes[k] = +r.partes[k] || 0;
+      var x = { id: str(m.id) || uid('m'), tipo: tipo, fecha: m.fecha, concepto: str(m.concepto).slice(0, 120), categoria: str(m.categoria),
+                importe: Math.abs(int(m.importe)), pagadoPor: m.pagadoPor, notas: str(m.notas), creado: str(m.creado) || new Date().toISOString() };
+      if (tipo === 'reembolso') x.para = ids[m.para] ? m.para : personas.filter(function (p) { return p.id !== m.pagadoPor; })[0].id;
+      else x.reparto = { modo: ['iguales', 'porcentaje', 'importes'].indexOf(r.modo) >= 0 ? r.modo : 'iguales', partes: partes };
+      return x;
+    }).sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : (a.creado < b.creado ? -1 : 1); });
+    var saldoInicial = {};
+    personas.forEach(function (p) { saldoInicial[p.id] = (o.saldoInicial && int(o.saldoInicial[p.id])) || 0; });
+    return { personas: personas, yo: yo, movimientos: movimientos, saldoInicial: saldoInicial, fechaSaldoInicial: fechaDia(o.fechaSaldoInicial),
+             umbral: o.umbral == null ? 5000 : Math.max(0, int(o.umbral)) };
   }
 
   /** Migraciones: MIGRACIONES[n] convierte un estado de versión n en versión n+1. */
@@ -258,6 +285,11 @@ var PFSchema = (function () {
     1: function (s) {
       // v2: desaparecen las marcas de «EJEMPLO» (los datos se conservan; normalizar() descarta el campo)
       s.version = 2;
+      return s;
+    },
+    2: function (s) {
+      // v3: nueva sección de gastos compartidos (estilo Tricount); normalizar() crea su estructura
+      s.version = 3;
       return s;
     }
   };
@@ -343,7 +375,7 @@ var PFSchema = (function () {
 
   return {
     VERSION: VERSION, APP: APP, GRUPOS: GRUPOS, CATEGORIAS_GASTO: CATEGORIAS_GASTO, CATEGORIAS_INGRESO: CATEGORIAS_INGRESO,
-    FRECUENCIAS: FRECUENCIAS, CLASES: CLASES, RENT_CLASE: RENT_CLASE,
+    FRECUENCIAS: FRECUENCIAS, CLASES: CLASES, RENT_CLASE: RENT_CLASE, CATEGORIAS_COMPARTIDO: CATEGORIAS_COMPARTIDO, compartido: compartido,
     uid: uid, clon: clon, partida: partida, hucha: hucha, inversion: inversion, deuda: deuda, cuenta: cuenta, activo: activo,
     escenario: escenario, hipotesis: hipotesis, normalizar: normalizar, migrar: migrar, MIGRACIONES: MIGRACIONES,
     datosIniciales: datosIniciales, estadoInicial: estadoInicial

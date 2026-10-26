@@ -1,6 +1,6 @@
 # Modelo de datos
 
-Versión del esquema: **2** (`PFSchema.VERSION`). Todo se guarda como un único objeto JSON en `localStorage` (clave `planificador-financiero/estado`) y es el mismo formato que se exporta o se guarda en archivo.
+Versión del esquema: **3** (`PFSchema.VERSION`). Todo se guarda como un único objeto JSON en `localStorage` (clave `planificador-financiero/estado`) y es el mismo formato que se exporta o se guarda en archivo.
 
 ## Convenciones
 
@@ -29,6 +29,7 @@ Internamente, el motor (`js/calc.js`) trabaja con meses como índice absoluto (`
   escenarioActivo: id,
   whatif: null | { escenarioId, desde, base: Escenario },   // modo ¿Y si…?: copia congelada
   seguimiento: [{ mes, liquido, huchas, inversiones, deudas, otros, nota }],  // real vs plan
+  compartido: Compartido,           // gastos en pareja (estilo Tricount), fuera de los escenarios
   meta: { creado, modificado, ultimaCopia }
 }
 ```
@@ -145,3 +146,32 @@ Si cuota, capital y TIN no cuadran exactamente, manda la cuota del recibo y el p
 - **Impuesto al vender**: escala del ahorro sobre (valor − aportado). En la cartera total se compensan ganancias y pérdidas.
 - **Colchón** = (cuentas líquidas + cuentas remuneradas) / (gastos esenciales + cuotas de deuda) al mes.
 - **Independencia financiera** = gasto anual × 25; se alcanza cuando inversiones + cuenta − deudas, en euros de hoy, lo superan.
+
+## Gastos en pareja (Compartido)
+
+Libro de gastos compartidos, al estilo Tricount. Es vida real, así que no depende del escenario.
+
+```js
+{
+  personas: [{ id: 'yo', nombre }, { id: 'pareja', nombre }, …],
+  yo: idPersona,                    // quién eres tú (el saldo se muestra desde tu punto de vista)
+  movimientos: [Movimiento],
+  saldoInicial: { idPersona: céntimos },   // lo que marcaba Tricount al empezar (suma 0)
+  fechaSaldoInicial: 'AAAA-MM-DD' | null,
+  umbral: 5000                      // aviso si el desequilibrio supera 50 €
+}
+```
+
+| Campo del movimiento | Significado |
+|---|---|
+| `tipo` | `gasto`, `reembolso` (pago entre vosotros para equilibrar) o `ingreso` (devolución que entra para todos) |
+| `fecha` | `AAAA-MM-DD` |
+| `concepto`, `categoria`, `notas` | Texto |
+| `importe` | Céntimos, siempre positivo |
+| `pagadoPor` | Quién pagó (o quién envía el reembolso) |
+| `para` | Solo reembolsos: quién lo recibe |
+| `reparto` | `{ modo: 'iguales' \| 'porcentaje' \| 'importes', partes: { idPersona: n } }`. Con `iguales`, `partes` marca con 1 o 0 quién participa (vacío = todos). Con `porcentaje`, el % de cada uno. Con `importes`, los céntimos exactos de cada uno. |
+
+**Saldo de una persona** = saldo de partida + lo que ha pagado − lo que le corresponde. Si es positivo, le deben.
+
+Las «liquidaciones» proponen el mínimo de pagos para quedar en paz. Los cálculos están en `js/tricount.js` (funciones puras, con pruebas). Ese mismo archivo importa el CSV que exporta Tricount: detecta las columnas *Title*, *Amount (in EUR)*, *Paid by*, *Paid for …*, *Date*, *Transaction type* y *Category*, y omite los movimientos duplicados.

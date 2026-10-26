@@ -25,6 +25,7 @@ Para poder guardar en la nube, cada navegador necesita un token (leer no lo nece
 | 4 | Inversiones |
 | 5 | Deudas |
 | 6 | Huchas y objetivos |
+| 0 | Gastos en pareja (vuestro Tricount: quién pagó, quién debe, importar CSV de Tricount) |
 | 7 | Patrimonio y largo plazo |
 | 8 | Escenarios |
 | 9 | Ajustes |
@@ -59,6 +60,7 @@ js/schema.js          esquema, valores por defecto, migraciones y datos iniciale
 js/store.js           estado, deshacer/rehacer, autoguardado, copias
 js/cloud.js           sincronización con GitHub (rama «datos»)
 js/whatif.js          modo ¿Y si…?
+js/tricount.js        gastos compartidos: saldos, liquidaciones e importación CSV
 js/ui-*.js, app.js    interfaz
 tests/run-tests.js    pruebas
 docs/MODELO-DATOS.md  modelo de datos y definiciones de cálculo

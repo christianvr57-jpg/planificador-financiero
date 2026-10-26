@@ -242,7 +242,7 @@ test('Datos iniciales: tus datos, sin marcas de ejemplo, y migración v1 → v2'
   cierto(k.ingresos === 2380000, 'ingresos 12 meses = 23.800 €');
   cierto(!JSON.stringify(st).includes('"ejemplo"'), 'sin marcas de ejemplo');
   var v1 = S.migrar({ version: 1, escenarios: { a: { nombre: 'X', partidas: [{ nombre: 'Netflix', tipo: 'gasto', importe: 1299, ejemplo: true }] } } });
-  igual(v1.version, 2, 'migrado a v2');
+  igual(v1.version, S.VERSION, 'migrado a la versión actual');
   cierto(v1.escenarios.a.partidas[0].ejemplo === undefined && v1.escenarios.a.partidas[0].importe === 1299, 'conserva la partida y quita la marca');
   cierto(e.partidas.some(function (p) { return p.nombre === 'Nómina'; }), 'conserva la nómina');
   cierto(e.deudas.length === 1 && e.inversiones.length === 2 && e.huchas.length === 2, 'conserva deuda, inversiones y huchas');
@@ -270,6 +270,75 @@ test('Avisos y KPI no fallan con un escenario vacío', function () {
   var k = C.kpis(e, sim);
   var a = C.avisos(e, sim, k);
   cierto(Array.isArray(a));
+});
+
+console.log('\nGastos compartidos (Tricount)');
+var T = require('../js/tricount.js');
+var P2 = [{ id: 'yo', nombre: 'Christian' }, { id: 'pareja', nombre: 'Laura' }];
+function comp(movs, extra) { return S.compartido(Object.assign({ personas: P2, movimientos: movs }, extra || {})); }
+
+test('A medias: pago 60 € → mi pareja me debe 30 €; los céntimos impares se reparten sin perder ninguno', function () {
+  var c = comp([{ fecha: '2026-10-01', concepto: 'Súper', importe: 6000, pagadoPor: 'yo' }]);
+  var s = T.saldos(c);
+  igual(s.yo, 3000); igual(s.pareja, -3000);
+  var r = T.reparto({ importe: 1001, pagadoPor: 'yo', reparto: { modo: 'iguales' } }, P2);
+  igual(r.yo + r.pareja, 1001, 'suma exacta');
+});
+test('Reparto por importes, porcentaje y gasto solo de uno', function () {
+  igual(JSON.stringify(T.reparto({ importe: 10000, pagadoPor: 'yo', reparto: { modo: 'importes', partes: { yo: 7000, pareja: 3000 } } }, P2)), '{"yo":7000,"pareja":3000}');
+  igual(JSON.stringify(T.reparto({ importe: 10000, pagadoPor: 'yo', reparto: { modo: 'porcentaje', partes: { yo: 60, pareja: 40 } } }, P2)), '{"yo":6000,"pareja":4000}');
+  var c = comp([{ fecha: '2026-10-02', concepto: 'Regalo para ella', importe: 5000, pagadoPor: 'yo', reparto: { modo: 'iguales', partes: { yo: 0, pareja: 1 } } }]);
+  igual(T.saldos(c).yo, 5000, 'todo de la pareja → me debe 50 €');
+});
+test('Reembolso salda la deuda y las liquidaciones proponen el pago exacto', function () {
+  var c = comp([
+    { fecha: '2026-10-01', concepto: 'Súper', importe: 8000, pagadoPor: 'yo' },
+    { fecha: '2026-10-03', concepto: 'Cena', importe: 3000, pagadoPor: 'pareja' }
+  ]);
+  var s = T.saldos(c);
+  igual(s.yo, 2500, 'me debe 40 − 15 = 25 €');
+  var l = T.liquidaciones(s);
+  igual(l.length, 1); igual(l[0].de, 'pareja'); igual(l[0].a, 'yo'); igual(l[0].importe, 2500);
+  c.movimientos.push({ id: 'r', tipo: 'reembolso', fecha: '2026-10-05', importe: 2500, pagadoPor: 'pareja', para: 'yo' });
+  var s2 = T.saldos(c);
+  igual(s2.yo, 0, 'en paz'); igual(s2.pareja, 0);
+});
+test('Saldo de partida, ingresos y resumen mensual', function () {
+  var c = comp([
+    { fecha: '2026-09-10', concepto: 'Luz', importe: 9000, pagadoPor: 'pareja' },
+    { fecha: '2026-10-10', concepto: 'Devolución', tipo: 'ingreso', importe: 2000, pagadoPor: 'pareja' }
+  ], { saldoInicial: { yo: 1000, pareja: -1000 } });
+  var s = T.saldos(c);
+  igual(s.yo, 1000 - 4500 + 1000, 'saldo de partida − mi mitad de la luz + mi mitad de la devolución');
+  var pm = T.porMes(c);
+  igual(pm.length, 2); igual(pm[0].parte.yo, 4500); igual(pm[1].total, -2000);
+  igual(pm[1].saldo.yo, s.yo, 'saldo acumulado a fin de mes');
+});
+test('Importar CSV exportado de Tricount (pagado por + columnas «Paid for»)', function () {
+  var csv = 'Title,Amount,Currency,Exchange rate,Amount in EUR,Paid by,Paid for Christian,Paid for Laura,Date & time,Transaction type,Category\n' +
+    '"Mercadona, compra semanal",84.30,EUR,1,84.30,Christian,42.15,42.15,2026-10-04 12:30:00,Normal,Groceries\n' +
+    'Cine,20,EUR,1,20,Laura,0,20,05/10/2026,Normal,Entertainment\n' +
+    'Pago,25.00,EUR,1,25.00,Laura,25.00,0,2026-10-06,Money transfer,\n' +
+    'Roto,abc,EUR,1,abc,Laura,0,0,2026-10-06,Normal,\n';
+  var p = T.parseCSV(csv);
+  igual(p.filas.length, 4);
+  var map = T.detectarColumnas(p.cabecera);
+  igual(p.cabecera[map.idx.importe], 'Amount in EUR');
+  igual(map.para.length, 2);
+  var r = T.convertir({ cab: p.cabecera, filas: p.filas, map: map, personas: P2, personasMap: {}, hoy: '2026-10-26' });
+  igual(r.movimientos.length, 3); igual(r.errores.length, 1);
+  var m0 = r.movimientos[0];
+  igual(m0.concepto, 'Mercadona, compra semanal'); igual(m0.importe, 8430); igual(m0.pagadoPor, 'yo'); igual(m0.fecha, '2026-10-04');
+  igual(r.movimientos[1].fecha, '2026-10-05'); igual(T.reparto(r.movimientos[1], P2).pareja, 2000, 'cine solo de Laura');
+  igual(r.movimientos[2].tipo, 'reembolso'); igual(r.movimientos[2].para, 'yo');
+  var c = comp(r.movimientos);
+  igual(T.saldos(c).yo, 4215 - 2500, 'saldo tras importar (el cine era solo de ella)');
+});
+test('Esquema v3: datos antiguos ganan la sección compartida vacía', function () {
+  var s = S.migrar({ version: 2, escenarios: { a: { nombre: 'X' } } });
+  igual(s.version, 3);
+  igual(s.compartido.personas.length, 2);
+  igual(s.compartido.movimientos.length, 0);
 });
 
 console.log('\n' + ok + ' correctas, ' + fallos + ' fallidas\n');

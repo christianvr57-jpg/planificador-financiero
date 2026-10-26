@@ -59,10 +59,12 @@ var PFResumen = (function () {
   }
   function avisos(c) {
     var lista = C.avisos(c.esc, c.sim, c.k, { fmt: F.eur0, mes: F.mesLargo });
+    var av = window.PFCompartido && PFCompartido.aviso();
+    if (av) lista.splice(lista[0] && lista[0].nivel === 'ok' ? 0 : lista.filter(function (x) { return x.nivel === 'critico'; }).length, lista[0] && lista[0].nivel === 'ok' ? 1 : 0, av);
     var ico = { critico: 'alerta', aviso: 'alerta', info: 'info', ok: 'ok' };
     var dias = PFStore.diasSinCopia();
     if (dias > 7) lista.splice(0, 0, { nivel: 'aviso', titulo: c.s.meta.ultimaCopia ? Math.floor(dias) + ' días sin copia de seguridad' : 'Sin copia de seguridad', texto: 'Guarda tus datos en un archivo: si se borran los datos del navegador, se pierden.', seccion: 'ajustes' });
-    var nombres = { presupuesto: 'Ver presupuesto', huchas: 'Ver huchas', deudas: 'Ver deudas', resumen: null, ajustes: 'Ir a ajustes', inversiones: 'Ver inversiones' };
+    var nombres = { compartido: 'Ver gastos en pareja', presupuesto: 'Ver presupuesto', huchas: 'Ver huchas', deudas: 'Ver deudas', resumen: null, ajustes: 'Ir a ajustes', inversiones: 'Ver inversiones' };
     return '<div class="card" style="margin-top:12px"><div class="card-h"><h3>Avisos</h3><span class="sub">Se recalculan con cada cambio</span></div>' +
       lista.map(function (a) {
         return '<div class="aviso-l ' + a.nivel + '">' + U.icono(ico[a.nivel]) + '<div style="flex:1"><b>' + h(a.titulo) + '</b><p>' + h(a.texto) + '</p></div>' +

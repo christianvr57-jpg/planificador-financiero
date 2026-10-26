@@ -17,6 +17,7 @@ var PFApp = (function () {
     { id: 'inversiones', nombre: 'Inversiones', tecla: '4' },
     { id: 'deudas', nombre: 'Deudas', tecla: '5' },
     { id: 'huchas', nombre: 'Huchas y objetivos', tecla: '6' },
+    { id: 'compartido', nombre: 'Gastos en pareja', tecla: '0' },
     { id: 'patrimonio', nombre: 'Patrimonio y largo plazo', tecla: '7' },
     { id: 'escenarios', nombre: 'Escenarios', tecla: '8' },
     { id: 'ajustes', nombre: 'Ajustes', tecla: '9' }
@@ -144,6 +145,7 @@ var PFApp = (function () {
     inversiones: 'Proyección por activo y total con tres escenarios. Estimaciones, no garantías.',
     deudas: 'Cuadro de amortización, amortización anticipada y estrategias.',
     huchas: 'Ahorro finalista para gastos anuales y objetivos con fecha.',
+    compartido: 'Vuestro Tricount: quién pagó qué y quién debe a quién. Enter añade el gasto.',
     patrimonio: 'Patrimonio neto proyectado hasta 40 años y seguimiento real frente al plan.',
     escenarios: 'Guarda versiones completas de tu plan y compáralas.',
     ajustes: 'Hipótesis por defecto, impuestos, apariencia y copias de seguridad.'
@@ -267,7 +269,7 @@ var PFApp = (function () {
   }
   function mostrarAtajos() {
     var filas = [
-      ['1 – 9', 'Ir a cada sección (3 activa ¿Y si…?)'], ['W', 'Activar / salir del modo ¿Y si…?'], ['N', 'Nueva partida'],
+      ['1 – 9 y 0', 'Ir a cada sección (3 activa ¿Y si…?, 0 gastos en pareja)'], ['W', 'Activar / salir del modo ¿Y si…?'], ['N', 'Nueva partida'],
       ['Ctrl + Z / Ctrl + Y', 'Deshacer / rehacer'], ['Ctrl + S', 'Guardar en archivo'], ['Ctrl + O', 'Abrir archivo'],
       ['Flechas', 'Moverse por la tabla del presupuesto'], ['Enter / F2 / escribir', 'Editar la celda'], ['Enter', 'Confirmar y bajar'],
       ['Tab / Mayús + Tab', 'Confirmar y moverse a la derecha / izquierda'], ['Mayús + Enter', 'Usar el importe como regla para todos los meses'],
