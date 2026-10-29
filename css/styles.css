@@ -643,7 +643,7 @@ dialog.tc-imp { width: 860px; }
 /* Pantalla de acceso por perfiles */
 body:not(.dentro) .app { visibility: hidden; }
 .acceso { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: var(--bg); padding: 16px; }
-.lock-card { width: 420px; max-width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 26px 28px 24px; position: relative; }
+.lock-card { width: min(420px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 26px 28px 24px; position: relative; }
 .lock-marca { display: flex; align-items: center; gap: 10px; color: var(--ink-2); margin-bottom: 18px; }
 .lock-marca .logo { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 700; }
 .acceso h1 { font-size: 20px; margin-bottom: 14px; }
@@ -663,3 +663,136 @@ body:not(.dentro) .app { visibility: hidden; }
 .lock-spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--line-2); border-top-color: var(--accent); animation: giro .8s linear infinite; }
 @keyframes giro { to { transform: rotate(360deg); } }
 .sb-marca { position: relative; } .sb-salir { margin-left: auto; }
+
+/* =============================================================================
+   Móvil (iPhone y similares, ≤ 760 px de ancho)
+   Barra de pestañas abajo, menú lateral deslizante, una sola columna, campos
+   de 16 px para que iOS no haga zoom al escribir y márgenes de zona segura.
+   ============================================================================= */
+.tabbar, .tb-menu, .sb-velo, .tb-t h1 .corto { display: none; }
+@media (max-width: 760px) {
+  :root { --tab: calc(58px + env(safe-area-inset-bottom)); }
+  html, body { overscroll-behavior: none; }
+  body { -webkit-text-size-adjust: 100%; }
+  .app { display: block; height: auto; }
+  .main { height: calc(100dvh - var(--tab)); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  .vista { padding: 0 12px 16px; -webkit-overflow-scrolling: touch; }
+  .pie-legal { display: none; }
+
+  /* Pestañas inferiores */
+  .tabbar {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; height: var(--tab);
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: color-mix(in srgb, var(--surface) 92%, transparent); border-top: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+  .tab-i {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; background: none;
+    color: var(--ink-3); font-size: 10.5px; font-weight: 500; padding: 6px 0 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; min-width: 0;
+  }
+  .tab-i .ico { width: 22px; height: 22px; stroke-width: 1.5; }
+  .tab-i.on { color: var(--accent); font-weight: 600; }
+  .tab-i.on.wi-on { color: var(--wi); }
+
+  /* Menú lateral deslizante */
+  .sidebar {
+    display: flex; position: fixed; top: 0; bottom: 0; left: 0; z-index: 70; width: min(300px, 84vw);
+    padding: calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+    transform: translateX(-105%); transition: transform .22s ease; box-shadow: var(--shadow);
+  }
+  body.menu-on .sidebar { transform: none; }
+  .sb-velo { position: fixed; inset: 0; z-index: 65; background: rgba(10, 10, 9, .35); }
+  body.menu-on .sb-velo { display: block; }
+  .sb-marca div, .nav-n { display: block; }
+  .sb-bloque, .sb-acc, .sb-priv { display: flex; }
+  .pill { display: inline; }
+  .nav-i { justify-content: flex-start; min-height: 42px; font-size: 14.5px; }
+  .nav-i .nav-k { display: none; }
+  .sb-salir { width: 36px !important; height: 36px !important; }
+
+  /* Cabecera compacta */
+  .topbar { gap: 8px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; }
+  .tb-menu { display: inline-flex; }
+  .tb-t h1 { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tb-sub, .tb-acc kbd { display: none; }
+  .tb-acc .btn { height: 36px; }
+  .tb-acc .btn.ico-b { width: 36px; }
+  #banners { padding: 0 12px 8px; }
+  .banner { flex-wrap: wrap; }
+  .wi { margin: 0 12px 8px; gap: 8px 16px; padding: 8px 10px; }
+  .wi-ks { gap: 8px 16px; }
+  .wi-k .delta { font-size: 14px; }
+  .wi-acc { margin-left: 0; justify-content: flex-start; }
+
+  /* Táctil: objetivos más grandes y campos de 16 px (sin zoom de iOS) */
+  .btn { height: 36px; }
+  .btn.sm { height: 32px; }
+  .btn.ico-b { width: 36px; }
+  .btn.ico-b.sm { width: 32px; height: 32px; }
+  .in, select.in, textarea.in, .cell-in { font-size: 16px; }
+  .in { height: 38px; }
+  .seg-b { height: 30px; }
+  .sw { width: 38px; height: 22px; border-radius: 11px; }
+  .sw .sw-t { width: 18px; height: 18px; }
+  .sw.on .sw-t { transform: translateX(16px); }
+  .sw-hueco { width: 38px; }
+  .g-add.mini { opacity: 1; }
+  .grip, .grip-hueco { display: none; }
+  .chip { padding: 5px 11px; font-size: 13px; }
+
+  /* Una columna */
+  .rejilla, .r2, .r3, .r-31, .r-13 { grid-template-columns: minmax(0, 1fr); }
+  .kpis, .kpis.k3, .kpis.kpis-res { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .kpi-v { font-size: 18px; }
+  .hu-ks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .sls { grid-template-columns: minmax(0, 1fr); }
+  .card { padding: 12px; overflow-x: auto; }
+  .tabla-scroll { overflow-x: auto; }
+  .graf { height: 220px; } .graf.alto { height: 260px; } .graf.bajo { height: 180px; }
+  .seccion-h h2 { flex-basis: 100%; }
+  .titulo-in { min-width: 0; }
+
+  /* Presupuesto: columna de nombres más estrecha; la tabla se desliza en horizontal */
+  .bt { --w-rh: 148px; --w-m: 64px; --w-t: 74px; font-size: 13px; }
+  /* En la columna de nombres solo cabe el nombre: activar, insignias y demás están en el panel de la partida */
+  .bt .sw, .bt .sw-hueco, .bt .lock, .bt .bdg, .bt .g-c { display: none; }
+  .bt .rh-in { gap: 4px; }
+  .bt .g-add { font-size: 0; padding: 6px; gap: 0; }
+  .bt .g-add .ico { width: 16px; height: 16px; }
+  .bt th, .bt td { height: 34px; }
+  .bt thead th { height: 34px; }
+  /* Los totales van al final de la tabla (fijos ocuparían media pantalla) */
+  .bt tfoot td, .bt tfoot th { bottom: auto !important; }
+  .cell-in { height: 32px; }
+  .bt-bar { gap: 8px; }
+  .bt-saldo .in { height: 34px; }
+  .ra { gap: 6px 14px; padding: 6px 10px; }
+  .ra h3 { width: 100%; }
+  .vista[data-sec="presupuesto"] .ra { display: none; }
+
+  /* Paneles y ventanas a pantalla completa */
+  .drawer { width: 100%; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); z-index: 80; }
+  .dr-h, .dr-b, .dr-f { padding-left: 14px; padding-right: 14px; }
+  .dr-f { flex-wrap: wrap; }
+  dialog.modal { width: calc(100vw - 20px); max-width: none; max-height: calc(100dvh - 40px); padding: 18px 16px 14px; overflow-y: auto; }
+  dialog.tc-imp { width: calc(100vw - 20px); }
+  .modal-acc { flex-wrap: wrap; }
+  .tc-map { grid-template-columns: minmax(0, 1fr); }
+  .tc-map select { width: 100%; }
+  .tc-campos > * { flex: 1 1 140px; }
+  .tc-campos .in, .card-h .in { width: 100% !important; }
+  .tb-t h1 .largo { display: none; }
+  .tb-t h1 .corto { display: inline; }
+  .tc-hero { font-size: 18px; } .tc-hero b { font-size: 24px; }
+  .toasts { bottom: calc(var(--tab) + 10px); width: calc(100vw - 24px); }
+  .toast { max-width: 100%; }
+  .tip { max-width: calc(100vw - 16px); }
+
+  /* Pantalla de acceso */
+  .acceso { padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); }
+  .lock-card { padding: 22px 18px 20px; }
+  .lock-form .in { height: 44px; font-size: 16px; }
+  .lock-entrar { height: 46px; font-size: 16px; }
+  .lock-p { padding: 14px; }
+}

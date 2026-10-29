@@ -4,6 +4,8 @@ Web de una sola página para unificar ingresos, gastos, huchas, inversiones y de
 
 **Abrir:** https://christianvr57-jpg.github.io/planificador-financiero/ desde cualquier PC. También funciona con doble clic en `index.html` de una copia local.
 
+**Móvil:** se adapta al iPhone (pestañas abajo y el resto de secciones en «Más»; en el presupuesto, toca una celda para editarla y el nombre de la partida para ver sus opciones). En Safari, *Compartir › Añadir a pantalla de inicio* la deja como una app.
+
 **Perfiles:** al abrir la web se elige perfil (Christian o Maribel) y se escribe su contraseña. Los datos de cada perfil se guardan cifrados (AES-GCM, clave derivada de la contraseña con PBKDF2), en el navegador y en la nube: sin la contraseña no se pueden leer. Si se olvida, no hay forma de recuperarlos, así que conviene guardar de vez en cuando una copia en archivo (Ctrl+S). Los «Gastos en pareja» son comunes a los dos perfiles y se fusionan solos. La sesión dura mientras la pestaña esté abierta; el candado de la barra lateral cambia de perfil.
 
 **Nube:** cada cambio se guarda en la rama `datos` de este repositorio (`perfiles/<perfil>.json` cifrado y `compartido.json`) (cada guardado es un commit, así que el historial de la rama guarda todas las versiones). Al abrir la página, al volver a la pestaña y cada 30 s se cargan los cambios hechos en otro PC; si hay cambios en los dos sitios, la app pregunta con cuál quedarse.

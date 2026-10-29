@@ -12,13 +12,13 @@ var PFApp = (function () {
 
   var SECCIONES = [
     { id: 'resumen', nombre: 'Resumen', tecla: '1' },
-    { id: 'presupuesto', nombre: 'Presupuesto 12 meses', tecla: '2' },
+    { id: 'presupuesto', nombre: 'Presupuesto 12 meses', corto: 'Presupuesto', tecla: '2' },
     { id: 'whatif', nombre: '¿Y si…?', tecla: '3', modo: true },
     { id: 'inversiones', nombre: 'Inversiones', tecla: '4' },
     { id: 'deudas', nombre: 'Deudas', tecla: '5' },
-    { id: 'huchas', nombre: 'Huchas y objetivos', tecla: '6' },
+    { id: 'huchas', nombre: 'Huchas y objetivos', corto: 'Huchas', tecla: '6' },
     { id: 'compartido', nombre: 'Gastos en pareja', tecla: '0' },
-    { id: 'patrimonio', nombre: 'Patrimonio y largo plazo', tecla: '7' },
+    { id: 'patrimonio', nombre: 'Patrimonio y largo plazo', corto: 'Patrimonio', tecla: '7' },
     { id: 'escenarios', nombre: 'Escenarios', tecla: '8' },
     { id: 'ajustes', nombre: 'Ajustes', tecla: '9' }
   ];
@@ -52,6 +52,7 @@ var PFApp = (function () {
     aplicarTema(c.s.ajustes.tema);
     U.morph(document.getElementById('sidebar'), htmlSidebar(c));
     U.morph(document.getElementById('topbar'), htmlTopbar(c));
+    U.morph(document.getElementById('tabbar'), htmlTabbar(c));
     U.morph(document.getElementById('whatif-bar'), htmlWhatIf(c));
     U.morph(document.getElementById('banners'), htmlAvisosGlobales(c));
     var id = PFUI.secciones[c.ui.seccion] ? c.ui.seccion : 'presupuesto';
@@ -154,13 +155,31 @@ var PFApp = (function () {
   };
   function htmlTopbar(c) {
     var s = SECCIONES.filter(function (x) { return x.id === c.ui.seccion; })[0] || SECCIONES[1];
-    return '<div class="tb-t"><h1>' + h(s.nombre) + '</h1><p class="tb-sub">' + h(SUBTITULOS[s.id] || '') + '</p></div>' +
+    return '<button type="button" class="btn ghost ico-b tb-menu" data-act="menu" aria-label="Menú">' + U.icono('menu') + '</button>' +
+      '<div class="tb-t"><h1>' + (s.corto ? '<span class="largo">' + h(s.nombre) + '</span><span class="corto">' + h(s.corto) + '</span>' : h(s.nombre)) + '</h1><p class="tb-sub">' + h(SUBTITULOS[s.id] || '') + '</p></div>' +
       '<div class="tb-acc">' +
       '<button type="button" class="btn ico-b" data-act="undo"' + (PFStore.puedeDeshacer() ? '' : ' disabled') + ' data-tip="Deshacer (Ctrl+Z)" aria-label="Deshacer">' + U.icono('deshacer') + '</button>' +
       '<button type="button" class="btn ico-b" data-act="redo"' + (PFStore.puedeRehacer() ? '' : ' disabled') + ' data-tip="Rehacer (Ctrl+Y)" aria-label="Rehacer">' + U.icono('rehacer') + '</button>' +
       '<button type="button" class="btn wi-btn' + (c.w ? ' on' : '') + '" data-act="whatif" aria-pressed="' + !!c.w + '">' +
       (c.w ? 'Salir de ¿Y si…?' : '¿Y si…?') + ' <kbd>W</kbd></button>' +
       '</div>';
+  }
+
+  // ------------------------------------------- Pestañas inferiores (móvil) ---
+  var PESTANAS = [
+    { id: 'resumen', nombre: 'Resumen', ico: 'inicio' }, { id: 'presupuesto', nombre: 'Presupuesto', ico: 'tabla' },
+    { id: 'huchas', nombre: 'Huchas', ico: 'hucha' }, { id: 'compartido', nombre: 'En pareja', ico: 'pareja' }
+  ];
+  function htmlTabbar(c) {
+    var enPestana = PESTANAS.some(function (t) { return t.id === c.ui.seccion; });
+    return PESTANAS.map(function (t) {
+      var on = c.ui.seccion === t.id;
+      return '<button type="button" class="tab-i' + (on ? ' on' : '') + '" data-act="nav" data-sec="' + t.id + '"' + (on ? ' aria-current="page"' : '') + '>' + U.icono(t.ico) + '<span>' + t.nombre + '</span></button>';
+    }).join('') +
+      '<button type="button" class="tab-i' + (enPestana ? '' : ' on') + (c.w ? ' on wi-on' : '') + '" data-act="menu" aria-label="Más secciones">' + U.icono('menu') + '<span>' + (c.w ? '¿Y si…?' : 'Más') + '</span></button>';
+  }
+  function menu(abrir) {
+    document.body.classList.toggle('menu-on', abrir == null ? !document.body.classList.contains('menu-on') : abrir);
   }
 
   // ---------------------------------------------------------- Barra ¿Y si? ---
@@ -203,6 +222,8 @@ var PFApp = (function () {
 
   // ------------------------------------------------------------ Acciones ---
   function irA(sec) {
+    menu(false);
+    if (PFStore.getUI().seccion === sec) document.getElementById('vista').scrollTop = 0;
     PFStore.setUI({ seccion: sec });
   }
   function toggleWhatIf() {
@@ -222,7 +243,8 @@ var PFApp = (function () {
   }
   function enlazarAcciones() {
     U.accion('nav', function (el) { irA(el.getAttribute('data-sec')); });
-    U.accion('whatif', toggleWhatIf);
+    U.accion('whatif', function () { menu(false); toggleWhatIf(); });
+    U.accion('menu', function () { menu(); });
     U.accion('wi-descartar', function () { PFWhatIf.descartar(); U.toast('Cambios descartados: vuelves a tu situación de partida.'); });
     U.accion('wi-aplicar', function () { PFWhatIf.aplicar(); U.toast('Cambios aplicados a «' + PFStore.esc().nombre + '».'); });
     U.accion('wi-prescindibles', function () {
@@ -313,6 +335,7 @@ var PFApp = (function () {
         return;
       }
       if (escribe || e.altKey) return;
+      if (k === 'Escape' && document.body.classList.contains('menu-on')) { menu(false); e.preventDefault(); return; }
       if (k === 'Escape') { if (window.PFEditor && PFEditor.abierto()) { PFEditor.cerrar(); e.preventDefault(); } return; }
       // En la tabla, los números y la navegación los gestiona la propia tabla
       if (e.target.closest && e.target.closest('.bt td[data-k]') && !/^[wWnN?]$/.test(k)) return;

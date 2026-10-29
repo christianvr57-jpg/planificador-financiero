@@ -125,7 +125,9 @@ var PFUI = (function () {
       papelera: 'M3 4h10M6 4V3h4v1M4.5 4l.7 9h5.6l.7-9', copiar: 'M5 5h7v8H5zM4 11H3V3h7v1', editar: 'M3 13l1-3 7-7 2 2-7 7zM10 4l2 2',
       info: 'M8 7v4M8 5v.5M8 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13', alerta: 'M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.4',
       ok: 'M3.5 8.5l3 3 6-6.5', candado: 'M4.5 7.5h7v5.5h-7zM6 7.5V5.5a2 2 0 0 1 4 0v2', flecha: 'M6 4l4 4-4 4', flechaI: 'M10 4L6 8l4 4',
-      hucha: 'M3 8a5 4 0 0 1 10 0v3H3zM6 5.5h4M5 11v2M11 11v2', grip: 'M6 4h.01M10 4h.01M6 8h.01M10 8h.01M6 12h.01M10 12h.01', lupa: 'M7 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM10 10l3.5 3.5'
+      hucha: 'M3 8a5 4 0 0 1 10 0v3H3zM6 5.5h4M5 11v2M11 11v2', grip: 'M6 4h.01M10 4h.01M6 8h.01M10 8h.01M6 12h.01M10 12h.01', lupa: 'M7 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM10 10l3.5 3.5',
+      inicio: 'M2.5 7.5L8 3l5.5 4.5M4 6.5V13h3v-3.5h2V13h3V6.5', tabla: 'M2.5 3h11v10h-11zM2.5 6.5h11M2.5 9.75h11M6.5 3v10',
+      pareja: 'M5.5 7.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM1.5 13a4 4 0 0 1 8 0M11 7.5a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5M10.5 9.6A3.5 3.5 0 0 1 14.5 13', menu: 'M2.5 4h11M2.5 8h11M2.5 12h11'
     }[nombre] || '';
     return '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="' + p + '"/></svg>';
   }
@@ -242,7 +244,12 @@ var PFUI = (function () {
   // --------------------------------------------------------- Delegación -----
   function enlazar() {
     tipEl = document.getElementById('tip');
+    var tactil = window.matchMedia && window.matchMedia('(hover: none)');
     document.addEventListener('click', function (e) {
+      if (tactil && tactil.matches) {
+        var dbl = e.target.closest('[data-dbl]');
+        if (dbl && !e.target.closest('[data-act]')) { var fd = acciones[dbl.getAttribute('data-dbl')]; if (fd) { ocultarTip(); fd(dbl, e); } return; }
+      }
       var el = e.target.closest('[data-act]');
       if (el && !el.disabled) {
         var fn = acciones[el.getAttribute('data-act')];

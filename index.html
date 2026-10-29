@@ -2,12 +2,20 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f0e" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Finanzas">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
 <!-- Seguridad: solo se permite conectar con la API de GitHub (sincronización en la nube). -->
 <meta http-equiv="Content-Security-Policy" content="connect-src https://api.github.com; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Planificador financiero</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a63b8'/%3E%3Ctext x='16' y='23' font-family='Segoe UI,Arial' font-size='19' font-weight='700' fill='white' text-anchor='middle'%3E€%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icono-180.png">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -23,6 +31,8 @@
     <section id="vista" class="vista" aria-live="off"></section>
     <footer class="pie-legal">Las proyecciones son estimaciones basadas en tus hipótesis, no garantías. No es asesoramiento financiero personalizado.</footer>
   </main>
+  <nav id="tabbar" class="tabbar" aria-label="Secciones principales"></nav>
+  <div class="sb-velo" data-act="menu"></div>
   <aside id="drawer" class="drawer" hidden></aside>
 </div>
 <div id="toasts" class="toasts" aria-live="polite"></div>
