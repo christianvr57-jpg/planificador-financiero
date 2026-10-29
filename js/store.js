@@ -4,13 +4,15 @@
    · Todo cambio pasa por PFStore.update(fn, {etiqueta, agrupar}).
    · Deshacer/rehacer con instantáneas JSON (máx. 200). Los cambios con la
      misma clave `agrupar` en menos de 1,5 s forman un único paso (deslizadores).
-   · Autoguardado en localStorage (300 ms). Estado de interfaz aparte (no se deshace).
+   · Autoguardado (300 ms) delegado en el perfil activo (PFPerfiles: cifrado).
+     Estado de interfaz aparte, por perfil (no se deshace).
+   · Los cambios en el libro común (gastos en pareja) se «sellan» con su hora
+     para poder fusionarlos con los del otro perfil.
    · Copias: exportar/importar JSON y guardar/abrir archivo (File System Access
      API si existe; si no, descarga clásica y selector de archivo).
    ============================================================================= */
 var PFStore = (function () {
   'use strict';
-  var CLAVE = 'planificador-financiero/estado';
   var CLAVE_UI = 'planificador-financiero/ui';
   var MAX_HIST = 200;
 
@@ -20,26 +22,20 @@ var PFStore = (function () {
   var oyentes = [];
   var temporizador = null;
   var archivo = null; // FileSystemFileHandle
+  var opciones = {};  // { guardar(estado) → Promise, sellar(antes, ahora), claveUI, prefijo }
   var info = { guardado: null, error: null, almacenamiento: true, revision: 0 };
 
   // ------------------------------------------------------------- Arranque ---
-  function iniciar() {
-    var crudo = null;
-    try { crudo = localStorage.getItem(CLAVE); } catch (e) { info.almacenamiento = false; }
-    if (crudo) {
-      try { estado = PFSchema.migrar(JSON.parse(crudo)); }
-      catch (e) {
-        // Datos dañados: se conservan aparte para no perderlos y se empieza de nuevo
-        try { localStorage.setItem(CLAVE + '/danado-' + Date.now(), crudo); } catch (e2) { /* nada */ }
-        info.error = 'No se pudieron leer los datos guardados (' + e.message + '). Se guardó una copia aparte.';
-        estado = PFSchema.estadoInicial();
-      }
-    } else {
-      estado = PFSchema.estadoInicial();
-      guardarAhora();
-    }
+  /** Arranca con el estado del perfil que acaba de entrar. */
+  function iniciar(inicial, opt) {
+    opciones = opt || {};
+    if (opciones.claveUI) CLAVE_UI = opciones.claveUI;
+    estado = inicial;
     try { ui = JSON.parse(localStorage.getItem(CLAVE_UI) || 'null'); } catch (e) { ui = null; }
     ui = Object.assign({ seccion: 'presupuesto' }, ui || {});
+  }
+  function sellar(antes) {
+    if (opciones.sellar && antes && antes.compartido && estado.compartido) opciones.sellar(antes.compartido, estado.compartido);
   }
 
   // --------------------------------------------------------------- Lectura ---
@@ -63,6 +59,7 @@ var PFStore = (function () {
     var agrupa = opt.agrupar && opt.agrupar === ultimaAgrupacion && (ahora - ultimaVez) < 1500;
     var antes = JSON.stringify(estado);
     fn(estado, esc());
+    if (!opt.nube) sellar(JSON.parse(antes));
     if (JSON.stringify(estado) === antes) return false; // sin cambios reales
     if (!agrupa) {
       deshacer.push({ json: antes, etiqueta: opt.etiqueta || 'cambio' });
@@ -82,7 +79,9 @@ var PFStore = (function () {
     if (!deshacer.length) return null;
     var paso = deshacer.pop();
     rehacer.push({ json: JSON.stringify(estado), etiqueta: paso.etiqueta });
+    var previo = estado;
     estado = JSON.parse(paso.json);
+    sellar(previo);
     ultimaAgrupacion = null; info.revision++;
     programarGuardado(); emitir({ deshacer: true });
     return paso.etiqueta;
@@ -91,7 +90,9 @@ var PFStore = (function () {
     if (!rehacer.length) return null;
     var paso = rehacer.pop();
     deshacer.push({ json: JSON.stringify(estado), etiqueta: paso.etiqueta });
+    var previo = estado;
     estado = JSON.parse(paso.json);
+    sellar(previo);
     ultimaAgrupacion = null; info.revision++;
     programarGuardado(); emitir({ rehacer: true });
     return paso.etiqueta;
@@ -110,14 +111,13 @@ var PFStore = (function () {
     temporizador = setTimeout(guardarAhora, 300);
   }
   function guardarAhora() {
-    try {
-      localStorage.setItem(CLAVE, JSON.stringify(estado));
+    if (!estado || !opciones.guardar) return Promise.resolve();
+    return Promise.resolve().then(function () { return opciones.guardar(estado); }).then(function () {
       info.guardado = new Date(); info.error = null; info.almacenamiento = true;
-    } catch (e) {
+    }).catch(function (e) {
       info.almacenamiento = false;
       info.error = 'El navegador no deja guardar (' + (e.name || e.message) + '). Exporta una copia para no perder cambios.';
-    }
-    emitir({ guardado: true, silencioso: true });
+    }).then(function () { emitir({ guardado: true, silencioso: true }); });
   }
   function on(fn) { oyentes.push(fn); }
   function emitir(opt) { oyentes.forEach(function (f) { try { f(opt || {}); } catch (e) { console.error(e); } }); }
@@ -125,7 +125,7 @@ var PFStore = (function () {
   // ------------------------------------------------------ Copias de datos ---
   function nombreArchivo() {
     var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; };
-    return 'planificador-' + d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + '.json';
+    return 'planificador-' + (opciones.prefijo ? opciones.prefijo + '-' : '') + d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + '.json';
   }
   function json() { return JSON.stringify(estado, null, 2); }
   function marcarCopia() {

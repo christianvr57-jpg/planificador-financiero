@@ -259,14 +259,19 @@ var PFSchema = (function () {
       if (r.partes) for (var k in r.partes) if (ids[k]) partes[k] = +r.partes[k] || 0;
       var x = { id: str(m.id) || uid('m'), tipo: tipo, fecha: m.fecha, concepto: str(m.concepto).slice(0, 120), categoria: str(m.categoria),
                 importe: Math.abs(int(m.importe)), pagadoPor: m.pagadoPor, notas: str(m.notas), creado: str(m.creado) || new Date().toISOString() };
+      x.mod = str(m.mod) || x.creado;
       if (tipo === 'reembolso') x.para = ids[m.para] ? m.para : personas.filter(function (p) { return p.id !== m.pagadoPor; })[0].id;
       else x.reparto = { modo: ['iguales', 'porcentaje', 'importes'].indexOf(r.modo) >= 0 ? r.modo : 'iguales', partes: partes };
       return x;
     }).sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : (a.creado < b.creado ? -1 : 1); });
     var saldoInicial = {};
     personas.forEach(function (p) { saldoInicial[p.id] = (o.saldoInicial && int(o.saldoInicial[p.id])) || 0; });
+    // Borrados recientes (para fusionar sin resucitar movimientos borrados en otro PC)
+    var vistos = {}, borrados = (Array.isArray(o.borrados) ? o.borrados : []).filter(function (b) {
+      if (!b || !b.id || vistos[b.id]) return false; vistos[b.id] = 1; return true;
+    }).map(function (b) { return { id: str(b.id), t: str(b.t) }; }).slice(-3000);
     return { personas: personas, yo: yo, movimientos: movimientos, saldoInicial: saldoInicial, fechaSaldoInicial: fechaDia(o.fechaSaldoInicial),
-             umbral: o.umbral == null ? 5000 : Math.max(0, int(o.umbral)) };
+             umbral: o.umbral == null ? 5000 : Math.max(0, int(o.umbral)), borrados: borrados, ajustesMod: str(o.ajustesMod) };
   }
 
   /** Migraciones: MIGRACIONES[n] convierte un estado de versión n en versión n+1. */
@@ -364,8 +369,54 @@ var PFSchema = (function () {
     });
     return esc;
   }
-  function estadoInicial(conEjemplo) {
-    var esc = conEjemplo === false ? escenario({ nombre: 'Mi plan', cuentas: [{ nombre: 'Cuenta corriente', saldo: 0 }] }) : datosIniciales();
+  /** Plan de Maribel (de su «Plan de ahorro», vigente desde octubre de 2026). */
+  function datosMaribel() {
+    var hBolsa = uid('h'), hColchon = uid('h'), iFondo = uid('i');
+    function g(nombre, grupo, categoria, euros, extra) {
+      return partida(Object.assign({ nombre: nombre, tipo: 'gasto', grupo: grupo, categoria: categoria, importe: Math.round(euros * 100), esencial: true }, extra || {}));
+    }
+    return escenario({
+      nombre: 'Mi plan',
+      inicio: '2026-10',
+      hipotesis: { pctExcedente: 1, destinoExcedente: iFondo },
+      cuentas: [{ nombre: 'Cuenta nómina', saldo: 0, liquida: true }],
+      partidas: [
+        partida({ nombre: 'Nómina', tipo: 'ingreso', subtipo: 'nomina', categoria: 'Nómina', importe: 200000, pagas: 14, mesesExtra: [6, 12], importeExtra: 120000, esencial: true,
+                  ajustes: { '2027-09': { v: 170000 } }, notas: '2.000 € netos y dos extras de 1.200 € (junio y diciembre). Septiembre con jornada reducida: 1.700 €.' }),
+        g('Hipoteca', 'fijos', 'Vivienda', 565),
+        g('Comunidad', 'fijos', 'Vivienda', 150),
+        g('Luz, agua, garaje, internet', 'fijos', 'Suministros', 70),
+        g('Bote común', 'fijos', 'Hijo', 300, { notas: 'Según el plan de ahorro: 300 €/mes.' }),
+        g('Comedor guardería (mi mitad)', 'fijos', 'Hijo', 75),
+        g('Gasolina', 'variables', 'Transporte', 200),
+        g('Gimnasio', 'suscripciones', 'Salud', 80, { esencial: false, notas: 'Regla de septiembre: si hace falta cuadrar, congelarlo un mes.' }),
+        g('Pádel', 'suscripciones', 'Ocio', 20, { esencial: false }),
+        g('Vida personal (móvil, ropa, ocio)', 'variables', 'Ocio', 150, { esencial: false }),
+        g('IBI', 'periodicos', 'Impuestos', 300, { frecuencia: 'anual', mesCargo: 3, pagadoDesde: hBolsa }),
+        g('Seguro de hogar', 'periodicos', 'Seguros', 324, { frecuencia: 'anual', mesCargo: 4, pagadoDesde: hBolsa,
+          notas: 'Febrero 2027: comparar. Renueva en abril y para no renovar hay que avisar con un mes de antelación.' }),
+        g('Seguro del coche', 'periodicos', 'Seguros', 550, { frecuencia: 'anual', mesCargo: 5, pagadoDesde: hBolsa,
+          notas: 'Marzo 2027: comparar. Es la factura más cara y la más fácil de bajar.' }),
+        g('Colegio de enfermería', 'periodicos', 'Otros', 40, { frecuencia: 'trimestral', mesCargo: 1, pagadoDesde: hBolsa, notas: '160 €/año. Meses de cargo supuestos.' }),
+        g('Ruedas', 'periodicos', 'Transporte', 250, { frecuencia: 'anual', mesCargo: 11, pagadoDesde: hBolsa, notas: 'En otoño (mes supuesto).' }),
+        g('ITV', 'periodicos', 'Transporte', 25, { frecuencia: 'anual', mesCargo: 10, pagadoDesde: hBolsa, notas: 'Mes supuesto.' }),
+        g('Mantenimiento coche, veterinario y regalos', 'variables', 'Otros', 50, { pagadoDesde: hBolsa, notas: '~600 €/año repartidos.' })
+      ],
+      huchas: [
+        { id: hBolsa, nombre: 'Bolsa de irregulares', tipo: 'hucha', aportacion: 18500, saldoInicial: 50000, ajustes: { '2026-12': { v: 58500 } },
+          notas: 'Cuenta aparte. Arranca con 500 € de los 1.000 actuales. De aquí sale todo lo previsible no mensual, nunca del colchón. Diciembre 2026: +400 € de la extra. Febrero–mayo: solo IBI, hogar y coche.' },
+        { id: hColchon, nombre: 'Colchón', tipo: 'hucha', aportacion: 20500, saldoInicial: 50000, fin: '2027-12', objetivo: 657000, fechaObjetivo: '2027-12',
+          ajustes: { '2026-12': { v: 100500 }, '2027-06': { v: 140500 }, '2027-09': { v: 0 }, '2027-12': { v: 140500 } },
+          notas: 'Fondo de emergencia, en una cuenta fuera del banco de la nómina. Extras: 800 € en diciembre 2026 y 1.200 € íntegros en junio y diciembre de 2027. En septiembre no se aporta (mes en rojo). Se para en diciembre de 2027 (~4 meses de gasto esencial): desde entonces los 205 €/mes y las extras se invierten.' }
+      ],
+      inversiones: [
+        { id: iFondo, nombre: 'Inversión (desde 2028)', clase: 'indexado', valor: 0, aportado: 0, aportacion: 0, ter: 0.002,
+          notas: 'Recibe el 100 % del excedente: a partir de enero de 2028, los 205 €/mes y las pagas extra que antes iban al colchón.' }
+      ]
+    });
+  }
+  function estadoInicial(conEjemplo, perfil) {
+    var esc = conEjemplo === false ? escenario({ nombre: 'Mi plan', cuentas: [{ nombre: 'Cuenta corriente', saldo: 0 }] }) : perfil === 'maribel' ? datosMaribel() : datosIniciales();
     var s = { escenarios: {}, orden: [esc.id], escenarioActivo: esc.id, version: VERSION };
     s.escenarios[esc.id] = esc;
     return normalizar(s);
@@ -378,7 +429,7 @@ var PFSchema = (function () {
     FRECUENCIAS: FRECUENCIAS, CLASES: CLASES, RENT_CLASE: RENT_CLASE, CATEGORIAS_COMPARTIDO: CATEGORIAS_COMPARTIDO, compartido: compartido,
     uid: uid, clon: clon, partida: partida, hucha: hucha, inversion: inversion, deuda: deuda, cuenta: cuenta, activo: activo,
     escenario: escenario, hipotesis: hipotesis, normalizar: normalizar, migrar: migrar, MIGRACIONES: MIGRACIONES,
-    datosIniciales: datosIniciales, estadoInicial: estadoInicial
+    datosIniciales: datosIniciales, datosMaribel: datosMaribel, estadoInicial: estadoInicial
   };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = PFSchema;

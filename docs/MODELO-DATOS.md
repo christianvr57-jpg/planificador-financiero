@@ -175,3 +175,15 @@ Libro de gastos compartidos, al estilo Tricount. Es vida real, así que no depen
 **Saldo de una persona** = saldo de partida + lo que ha pagado − lo que le corresponde. Si es positivo, le deben.
 
 Las «liquidaciones» proponen el mínimo de pagos para quedar en paz. Los cálculos están en `js/tricount.js` (funciones puras, con pruebas). Ese mismo archivo importa el CSV que exporta Tricount: detecta las columnas *Title*, *Amount (in EUR)*, *Paid by*, *Paid for …*, *Date*, *Transaction type* y *Category*, y omite los movimientos duplicados.
+
+## Perfiles y almacenamiento
+
+Hay dos perfiles fijos (`christian` y `maribel`). Cada uno guarda un estado completo como el descrito arriba, salvo `compartido`, que es común a los dos.
+
+| Dónde | Qué |
+|---|---|
+| `localStorage['pf/perfil/<id>']` y nube `perfiles/<id>.json` | `{ formato: 'perfil-cifrado', perfil, sal, iter, iv, datos, modificado }`. `datos` es el estado del perfil (sin el libro común, con `compartidoYo`) cifrado con AES-GCM; la clave se deriva de la contraseña con PBKDF2-SHA256 (250.000 iteraciones). |
+| `localStorage['pf/compartido']` y nube `compartido.json` | Libro común de gastos en pareja, sin cifrar y sin `yo`. Cada movimiento lleva `mod`; los borrados se recuerdan en `borrados` y los ajustes en `ajustesMod`. Al sincronizar, gana la edición más reciente de cada movimiento (`PFTricount.fusionar`). |
+| `sessionStorage['pf/sesion']` | Clave de la sesión abierta en esa pestaña. |
+
+La primera vez, el perfil de Christian se crea con los datos que había antes (`planificador-financiero/estado` en el navegador o `plan.json` en la nube, los más recientes). Después se borran esas copias sin cifrar. El de Maribel arranca con su «Plan de ahorro» (`PFSchema.datosMaribel`).

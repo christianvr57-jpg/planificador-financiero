@@ -104,7 +104,9 @@ var PFApp = (function () {
     var est = info.error ? '<span class="neg">' + U.icono('alerta') + ' Sin guardar</span>'
       : '<span class="ok">' + U.icono('ok') + ' Guardado automático' + (info.guardado ? ' · ' + info.guardado.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '') + '</span>';
     var oscuro = temaEfectivo() === 'oscuro';
-    return '<div class="sb-marca"><span class="logo" aria-hidden="true">€</span><div><b>Planificador</b><small>financiero personal</small></div></div>' +
+    var yo = PFPerfiles.activo() || { nombre: '', color: 'var(--accent)' };
+    return '<div class="sb-marca"><span class="logo" aria-hidden="true" style="background:' + yo.color + '">' + h(yo.nombre.charAt(0)) + '</span><div><b>' + h(yo.nombre) + '</b><small>Planificador financiero</small></div>' +
+      '<button type="button" class="btn ghost ico-b sm sb-salir" data-act="perfil-salir" data-tip="Cambiar de perfil (cierra la sesión)" aria-label="Cambiar de perfil">' + U.icono('candado') + '</button></div>' +
       '<nav class="sb-nav" aria-label="Secciones">' + nav + '</nav>' +
       '<div class="sb-bloque" data-form="app">' +
       '<label class="sb-l" for="sel-esc">Escenario</label>' +
@@ -246,6 +248,13 @@ var PFApp = (function () {
     U.accion('exportar', function () { PFStore.exportar(); U.toast('Copia descargada.'); });
     U.accion('posponer-copia', function () { PFStore.setUI({ recordatorioHasta: Date.now() + 864e5 }); });
     U.accion('atajos', mostrarAtajos);
+    U.accion('perfil-salir', function () {
+      var n = window.PFNube && PFNube.estado();
+      PFStore.guardarAhora().then(function () {
+        if (!(n && n.pendiente && n.conectado)) { PFPerfiles.cerrarSesion(); return; }
+        PFNube.sincronizar(true).then(function () { PFPerfiles.cerrarSesion(); });
+      });
+    });
     U.formulario('app', function (id, campo, v) {
       if (campo === 'escenario') {
         if (PFWhatIf.activo()) { U.toast('Termina el modo ¿Y si…? (Aplicar o Descartar) antes de cambiar de escenario.', { tipo: 'error' }); render(); return; }
@@ -264,7 +273,11 @@ var PFApp = (function () {
       if (!r) return;
       var n = Object.keys(r.estado.escenarios).length;
       return U.confirmar({ titulo: 'Abrir «' + r.nombre + '»', texto: 'Contiene ' + n + (n === 1 ? ' escenario' : ' escenarios') + '. Sustituirá los datos actuales (podrás deshacerlo con Ctrl+Z).', ok: 'Abrir y sustituir' })
-        .then(function (sí) { if (sí) { PFStore.reemplazar(r.estado, 'abrir archivo'); U.toast('Datos cargados de «' + r.nombre + '».'); } });
+        .then(function (sí) {
+          if (!sí) return;
+          r.estado.compartido = PFStore.get().compartido; // los gastos en pareja son comunes: no se pisan
+          PFStore.reemplazar(r.estado, 'abrir archivo'); U.toast('Datos cargados de «' + r.nombre + '».');
+        });
     }).catch(function (e) { U.toast(e.message || 'No se pudo abrir el archivo.', { tipo: 'error', ms: 6000 }); });
   }
   function mostrarAtajos() {
@@ -281,6 +294,7 @@ var PFApp = (function () {
   // ------------------------------------------------------------- Teclado ---
   function enlazarTeclado() {
     document.addEventListener('keydown', function (e) {
+      if (!PFStore.get()) return; // aún en la pantalla de acceso
       var ctrl = e.ctrlKey || e.metaKey, k = e.key;
       var escribe = U.escribiendo(document.activeElement);
       if (document.querySelector('dialog[open]')) return;
@@ -312,10 +326,19 @@ var PFApp = (function () {
 
   // ---------------------------------------------------------------- Inicio ---
   function iniciar() {
-    PFStore.iniciar();
     U.enlazar();
     enlazarAcciones();
     enlazarTeclado();
+    // Antes de nada: elegir perfil y escribir su contraseña
+    PFPerfiles.entrar().then(function (r) {
+      PFStore.iniciar(r.estado, { claveUI: 'planificador-financiero/ui/' + r.perfil.id, guardar: PFPerfiles.guardarLocal, sellar: PFTricount.sellar, prefijo: r.perfil.id });
+      arrancar();
+      if (r.legado) U.toast('Perfil creado con tus datos de siempre, ahora cifrados con tu contraseña.', { ms: 7000 });
+      else if (r.nuevo) U.toast('Perfil de ' + r.perfil.nombre + ' creado. ¡Bienvenida/o!', { ms: 5000 });
+    });
+  }
+  function arrancar() {
+    document.body.classList.add('dentro');
     PFStore.on(function (o) {
       if (o.silencioso) { U.morph(document.getElementById('sidebar'), htmlSidebar(ctx())); return; }
       // Todo cambio del plan (no de interfaz ni el que llega de la nube) se sube a la nube

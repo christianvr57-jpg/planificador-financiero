@@ -51,7 +51,7 @@ var PFAjustes = (function () {
       '<div class="fld"><span class="fld-l">Céntimos en el presupuesto</span>' + U.seg([{ id: 'auto', nombre: 'Automático' }, { id: 'si', nombre: 'Siempre' }, { id: 'no', nombre: 'Nunca' }], cent == null ? 'auto' : cent ? 'si' : 'no', { 'data-f': 'centimos' }, 'mini') +
       '<span class="fld-a">Automático: con pantallas de 1.680 px o más.</span></div></div></div>';
 
-    var copias = nube(c) + '<div class="card"><div class="card-h"><h3>Datos y copias de seguridad</h3></div>' +
+    var copias = perfil() + nube(c) + '<div class="card"><div class="card-h"><h3>Datos y copias de seguridad</h3></div>' +
       '<p class="nota" style="margin-bottom:10px">Además de la nube, se guarda en este navegador. Última copia en archivo: <b>' + h(c.s.meta.ultimaCopia ? F.fechaHora(c.s.meta.ultimaCopia) : 'nunca') + '</b>. Te avisaré si pasan más de 7 días sin copia.</p>' +
       '<div class="fila-ctl">' +
       '<button type="button" class="btn sm prim" data-act="guardar-archivo">' + U.icono('guardar') + 'Guardar en archivo (Ctrl+S)</button>' +
@@ -69,6 +69,16 @@ var PFAjustes = (function () {
       '<p class="nota" style="margin-top:8px">Datos: versión de esquema ' + s.version + ' · ' + s.orden.length + ' escenarios · ' + s.seguimiento.length + ' meses de seguimiento. <button type="button" class="btn-link" data-act="atajos">Atajos de teclado</button></p></div>';
 
     return '<div class="rejilla r2">' + '<div>' + plan + hip + rent + '</div><div>' + copias + irpf + apariencia + priv + '</div></div>';
+  }
+  function perfil() {
+    var p = PFPerfiles.activo();
+    return '<div class="card"><div class="card-h"><h3>Perfil de ' + h(p.nombre) + '</h3><button type="button" class="btn sm" data-act="perfil-salir">' + U.icono('candado') + 'Cambiar de perfil</button></div>' +
+      '<p class="nota" style="margin-bottom:10px">Tus datos se guardan cifrados con tu contraseña, en este navegador y en la nube. Los gastos en pareja son comunes a los dos perfiles.</p>' +
+      '<div class="fila-ctl"><input class="in" type="password" id="pf-actual" placeholder="Contraseña actual" autocomplete="current-password" style="width:170px" aria-label="Contraseña actual">' +
+      '<input class="in" type="password" id="pf-nueva1" placeholder="Nueva" autocomplete="new-password" style="width:140px" aria-label="Contraseña nueva">' +
+      '<input class="in" type="password" id="pf-nueva2" placeholder="Repite la nueva" autocomplete="new-password" style="width:140px" aria-label="Repite la contraseña nueva">' +
+      '<button type="button" class="btn sm" data-act="pf-cambiar">Cambiar contraseña</button></div>' +
+      '<p class="fld-a" style="margin-top:6px">Si olvidas la contraseña no se pueden recuperar los datos cifrados: guarda de vez en cuando una copia en archivo (Ctrl+S).</p></div>';
   }
   function nube(c) {
     var n = PFNube.estado(), F2 = F;
@@ -97,6 +107,16 @@ var PFAjustes = (function () {
     return false;
   }
   function enlazar() {
+    U.accion('pf-cambiar', function () {
+      var a = document.getElementById('pf-actual').value, n1 = document.getElementById('pf-nueva1').value, n2 = document.getElementById('pf-nueva2').value;
+      if (n1.length < 4) { U.toast('La nueva contraseña necesita al menos 4 caracteres.', { tipo: 'error' }); return; }
+      if (n1 !== n2) { U.toast('Las dos contraseñas nuevas no coinciden.', { tipo: 'error' }); return; }
+      PFPerfiles.cambiarPassword(a, n1).then(function () {
+        ['pf-actual', 'pf-nueva1', 'pf-nueva2'].forEach(function (id) { document.getElementById(id).value = ''; });
+        if (window.PFNube) PFNube.alCambiar();
+        U.toast('Contraseña cambiada. En otros PCs te la pedirá al cargar los cambios.');
+      }).catch(function (e) { U.toast(e.message, { tipo: 'error' }); });
+    });
     U.accion('nube-conectar', function () {
       var t = document.getElementById('nube-token').value.trim();
       if (!t) { U.toast('Pega primero el token.', { tipo: 'error' }); return; }
@@ -150,7 +170,7 @@ var PFAjustes = (function () {
       PFStore.importar().then(function (r) {
         if (!r) return;
         return U.confirmar({ titulo: 'Importar «' + r.nombre + '»', texto: 'Sustituirá todos los datos actuales. Podrás deshacerlo con Ctrl+Z.', ok: 'Importar' }).then(function (ok) {
-          if (ok) { PFStore.reemplazar(r.estado, 'importar'); U.toast('Datos importados.'); }
+          if (ok) { r.estado.compartido = PFStore.get().compartido; PFStore.reemplazar(r.estado, 'importar'); U.toast('Datos importados.'); }
         });
       }).catch(function (err) { U.toast(err.message, { tipo: 'error', ms: 6000 }); });
     });
@@ -160,6 +180,7 @@ var PFAjustes = (function () {
         if (!ok) return;
         var nuevo = S.estadoInicial(false);
         nuevo.ajustes = S.clon(PFStore.get().ajustes);
+        nuevo.compartido = PFStore.get().compartido;
         nuevo.meta.ultimaCopia = PFStore.get().meta.ultimaCopia;
         PFStore.reemplazar(nuevo, 'empezar de cero');
         U.toast('Plan vacío creado.', { accion: 'Deshacer', fn: function () { PFStore.undo(); } });
@@ -169,8 +190,9 @@ var PFAjustes = (function () {
       if (bloqueado()) return;
       U.confirmar({ titulo: 'Restaurar datos iniciales', texto: 'Vuelve a los datos con los que se creó el planificador. Se sustituye todo lo actual (puedes deshacerlo).', ok: 'Restaurar', peligro: true }).then(function (ok) {
         if (!ok) return;
-        var nuevo = S.estadoInicial(true);
+        var nuevo = S.estadoInicial(true, PFPerfiles.activo().id);
         nuevo.ajustes = S.clon(PFStore.get().ajustes);
+        nuevo.compartido = PFStore.get().compartido;
         PFStore.reemplazar(nuevo, 'restaurar datos iniciales');
       });
     });

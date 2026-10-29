@@ -334,6 +334,33 @@ test('Importar CSV exportado de Tricount (pagado por + columnas «Paid for»)', 
   var c = comp(r.movimientos);
   igual(T.saldos(c).yo, 4215 - 2500, 'saldo tras importar (el cine era solo de ella)');
 });
+test('Fusión del libro compartido editado a la vez por los dos perfiles', function () {
+  var base = comp([{ id: 'a', fecha: '2026-10-01', concepto: 'Súper', importe: 6000, pagadoPor: 'yo', creado: '2026-10-01T10:00:00Z' },
+                   { id: 'b', fecha: '2026-10-02', concepto: 'Cena', importe: 3000, pagadoPor: 'pareja', creado: '2026-10-02T10:00:00Z' }]);
+  // PC de Christian: añade «c» y edita «a»
+  var A = S.clon(base); A.movimientos.push(S.compartido({ personas: P2, movimientos: [{ id: 'c', fecha: '2026-10-05', concepto: 'Farmacia', importe: 1000, pagadoPor: 'yo' }] }).movimientos[0]);
+  A.movimientos[0].importe = 7000; T.sellar(base, A, '2026-10-05T10:00:00Z');
+  // PC de Maribel: borra «b» y añade «d»
+  var B = S.clon(base); B.movimientos = B.movimientos.filter(function (m) { return m.id !== 'b'; });
+  B.movimientos.push(S.compartido({ personas: P2, movimientos: [{ id: 'd', fecha: '2026-10-06', concepto: 'Pan', importe: 300, pagadoPor: 'pareja' }] }).movimientos[0]);
+  T.sellar(base, B, '2026-10-06T10:00:00Z');
+  var M = S.compartido(T.fusionar(A, B)), ids = M.movimientos.map(function (m) { return m.id; }).join(',');
+  igual(ids, 'a,c,d', 'une altas, respeta el borrado');
+  igual(M.movimientos[0].importe, 7000, 'conserva la edición');
+  igual(JSON.stringify(S.compartido(T.fusionar(B, A)).movimientos.map(function (m) { return m.id; })), JSON.stringify(['a', 'c', 'd']), 'conmutativa');
+  // Deshacer el borrado después (más reciente que el borrado) lo recupera
+  var B2 = S.clon(B); B2.movimientos.push(S.clon(base.movimientos[1])); T.sellar(B, B2, '2026-10-07T10:00:00Z');
+  igual(S.compartido(T.fusionar(A, B2)).movimientos.length, 4, 'deshacer un borrado lo recupera');
+});
+test('Plan de Maribel: cuadra con su plan de ahorro', function () {
+  var st = S.estadoInicial(true, 'maribel'), e = st.escenarios[st.escenarioActivo], sim = C.simular(e);
+  var col = e.huchas.filter(function (h) { return h.nombre === 'Colchón'; })[0].id;
+  igual(sim.porHucha[col][2], 191500, 'colchón diciembre 2026');
+  igual(sim.porHucha[col][5], 253000, 'colchón marzo 2027');
+  igual(sim.porHucha[col][8], 434500, 'colchón junio 2027');
+  igual(sim.m.ahorro[11], -9500, 'septiembre 2027 en rojo: −95 €');
+  igual(sim.m.ahorro[2], 0, 'diciembre cuadra a cero');
+});
 test('Esquema v3: datos antiguos ganan la sección compartida vacía', function () {
   var s = S.migrar({ version: 2, escenarios: { a: { nombre: 'X' } } });
   igual(s.version, 3);

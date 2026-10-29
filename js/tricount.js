@@ -230,7 +230,52 @@ var PFTricount = (function () {
   /** Clave para detectar duplicados al importar. */
   function huella(m) { return [m.fecha, norm(m.concepto), m.importe, m.pagadoPor, m.tipo].join('|'); }
 
+  // ------------------------------------------- Fusión entre dos perfiles ---
+  // El libro compartido lo editan los dos perfiles (a veces a la vez, en PCs
+  // distintos). Cada movimiento lleva `mod` (última edición) y los borrados se
+  // recuerdan en `borrados` [{id, t}]; los ajustes llevan `ajustesMod`.
+  function sinMod(m) { var o = Object.assign({}, m); delete o.mod; return JSON.stringify(o); }
+  function ajustesDe(c) { return JSON.stringify([c.personas, c.saldoInicial, c.fechaSaldoInicial, c.umbral]); }
+  /** Marca con la hora actual lo que cambió entre `antes` y `ahora` (muta `ahora`). */
+  function sellar(antes, ahora, t) {
+    if (!antes || !ahora) return;
+    t = t || new Date().toISOString();
+    var prev = {};
+    (antes.movimientos || []).forEach(function (m) { prev[m.id] = m; });
+    var actuales = {};
+    ahora.movimientos.forEach(function (m) {
+      actuales[m.id] = 1;
+      var p = prev[m.id];
+      if (!p || sinMod(p) !== sinMod(m)) m.mod = t;
+    });
+    ahora.borrados = (ahora.borrados || []).filter(function (b) { return !actuales[b.id]; });
+    (antes.movimientos || []).forEach(function (m) { if (!actuales[m.id]) ahora.borrados.push({ id: m.id, t: t }); });
+    if (ajustesDe(antes) !== ajustesDe(ahora)) ahora.ajustesMod = t;
+  }
+  /** Fusiona dos versiones del libro: gana la edición más reciente de cada movimiento. */
+  function fusionar(a, b) {
+    var out = JSON.parse(JSON.stringify((b.ajustesMod || '') > (a.ajustesMod || '') ? b : a));
+    var bor = {};
+    (a.borrados || []).concat(b.borrados || []).forEach(function (x) { if (!bor[x.id] || x.t > bor[x.id]) bor[x.id] = x.t; });
+    var movs = {};
+    a.movimientos.concat(b.movimientos).forEach(function (m) {
+      var x = movs[m.id];
+      if (!x || (m.mod || '') > (x.mod || '')) movs[m.id] = m;
+    });
+    out.movimientos = Object.keys(movs).map(function (id) { return movs[id]; })
+      .filter(function (m) { return !bor[m.id] || (m.mod || '') > bor[m.id]; })
+      .sort(function (x, y) { return x.fecha < y.fecha ? -1 : x.fecha > y.fecha ? 1 : ((x.creado || '') < (y.creado || '') ? -1 : 1); });
+    var vivos = {}; out.movimientos.forEach(function (m) { vivos[m.id] = 1; });
+    out.borrados = Object.keys(bor).filter(function (id) { return !vivos[id]; }).map(function (id) { return { id: id, t: bor[id] }; });
+    // Personas: unión (no se pierde ninguna que tenga movimientos)
+    var pers = {}; out.personas.forEach(function (p) { pers[p.id] = 1; });
+    (a.personas.concat(b.personas)).forEach(function (p) { if (!pers[p.id]) { out.personas.push(p); pers[p.id] = 1; } });
+    out.yo = a.yo;
+    return out;
+  }
+
   return {
+    sellar: sellar, fusionar: fusionar,
     reparto: reparto, efecto: efecto, saldos: saldos, liquidaciones: liquidaciones, porMes: porMes, porCategoria: porCategoria,
     leerFecha: leerFecha, parseCSV: parseCSV, detectarColumnas: detectarColumnas, convertir: convertir, huella: huella, norm: norm
   };
