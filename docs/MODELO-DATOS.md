@@ -67,7 +67,7 @@ Copia completa y con nombre de todo el plan.
 |---|---|---|
 | `nombre`, `categoria`, `notas` | texto | |
 | `tipo` | `ingreso` \| `gasto` | |
-| `grupo` | `ingresos` \| `fijos` \| `suscripciones` \| `variables` \| `periodicos` | Grupo de la tabla |
+| `grupo` | `ingresos` \| `fijos` \| `suscripciones` \| `variables` \| `tricount` \| `periodicos` | Grupo de la tabla |
 | `importe` | céntimos | Importe **total del hogar** por cargo |
 | `frecuencia` | `mensual` \| `bimestral` \| `trimestral` \| `semestral` \| `anual` \| `puntual` | |
 | `mesCargo` | 1–12 | Mes ancla: bimestral desde noviembre → nov, ene, mar… |

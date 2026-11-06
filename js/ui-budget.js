@@ -516,7 +516,7 @@ var PFPresupuesto = (function () {
   // hucha o sus gastos (pasa a pagarse desde ella) o entre dos filas (reordena).
   // Los ingresos solo se reordenan entre ingresos.
   var arrastre = null, marcada = null;
-  var NOMBRE_GRUPO = { ingresos: 'Ingresos', fijos: 'Gastos fijos', suscripciones: 'Suscripciones', variables: 'Gastos variables', periodicos: 'Gastos anuales / periódicos' };
+  var NOMBRE_GRUPO = { ingresos: 'Ingresos', fijos: 'Gastos fijos', suscripciones: 'Suscripciones', variables: 'Gastos variables', tricount: 'TRICOUNT', periodicos: 'Gastos anuales / periódicos' };
   function destinoDe(e) {
     var tr = e.target.closest && e.target.closest('.bt tbody tr');
     if (!tr || !arrastre) return null;
@@ -636,7 +636,7 @@ var PFPresupuesto = (function () {
     });
     U.accion('bt-plegar-todo', function () {
       var u = opciones(PFApp.ctx()), alguno = Object.keys(u.plegados).some(function (k) { return u.plegados[k]; }), p = {};
-      if (!alguno) ['ingresos', 'fijos', 'suscripciones', 'variables', 'periodicos', 'huchas', 'deudas', 'inversion'].forEach(function (g) { p[g] = true; });
+      if (!alguno) ['ingresos', 'fijos', 'suscripciones', 'variables', 'tricount', 'periodicos', 'huchas', 'deudas', 'inversion'].forEach(function (g) { p[g] = true; });
       setOpc({ plegados: p });
     });
     U.accion('bt-add', function (el) { nuevaPartida(el.getAttribute('data-g') || 'variables', el.getAttribute('data-h') || null); });

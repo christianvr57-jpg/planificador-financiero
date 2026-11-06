@@ -15,6 +15,7 @@ var PFSchema = (function () {
     { id: 'fijos', nombre: 'Gastos fijos' },
     { id: 'suscripciones', nombre: 'Suscripciones' },
     { id: 'variables', nombre: 'Gastos variables' },
+    { id: 'tricount', nombre: 'TRICOUNT' },
     { id: 'periodicos', nombre: 'Gastos anuales / periódicos' }
   ];
   var CATEGORIAS_GASTO = ['Vivienda', 'Suministros', 'Alimentación', 'Transporte', 'Hijo', 'Mascota', 'Ocio', 'Suscripciones',
@@ -62,7 +63,7 @@ var PFSchema = (function () {
       id: str(o.id) || uid('p'),
       nombre: str(o.nombre, 'Nueva partida'),
       tipo: tipo,
-      grupo: tipo === 'ingreso' ? 'ingresos' : (['fijos', 'suscripciones', 'variables', 'periodicos'].indexOf(o.grupo) >= 0 ? o.grupo : 'variables'),
+      grupo: tipo === 'ingreso' ? 'ingresos' : (['fijos', 'suscripciones', 'variables', 'tricount', 'periodicos'].indexOf(o.grupo) >= 0 ? o.grupo : 'variables'),
       categoria: str(o.categoria, tipo === 'ingreso' ? 'Otros ingresos' : 'Otros'),
       importe: int(o.importe),
       frecuencia: ['mensual', 'bimestral', 'trimestral', 'semestral', 'anual', 'puntual'].indexOf(o.frecuencia) >= 0 ? o.frecuencia : 'mensual',

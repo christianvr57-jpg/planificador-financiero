@@ -26,6 +26,11 @@ function ahorroAnual(e) { return C.suma(C.simular(e, { meses: 12 }).m.ahorro, 0,
 
 console.log('\nPruebas de aceptación');
 
+test('El grupo TRICOUNT se conserva al normalizar una partida', function () {
+  cierto(S.partida({ tipo: 'gasto', grupo: 'tricount' }).grupo === 'tricount', 'el grupo TRICOUNT se conserva');
+  cierto(S.GRUPOS.some(function (g) { return g.nombre === 'TRICOUNT'; }), 'aparece entre los grupos');
+});
+
 test('1. Suscripción de 12,99 €/mes → 155,88 €/año; desactivarla sube el ahorro exactamente esa cifra', function () {
   var sus = S.partida({ id: 'netflix', nombre: 'Netflix', tipo: 'gasto', grupo: 'suscripciones', importe: 1299 });
   var e = esc(); e.partidas.push(sus);
