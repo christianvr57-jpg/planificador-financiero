@@ -17,7 +17,6 @@ var PFApp = (function () {
     { id: 'inversiones', nombre: 'Inversiones', tecla: '4' },
     { id: 'deudas', nombre: 'Deudas', tecla: '5' },
     { id: 'huchas', nombre: 'Huchas y objetivos', corto: 'Huchas', tecla: '6' },
-    { id: 'compartido', nombre: 'Gastos en pareja', tecla: '0' },
     { id: 'patrimonio', nombre: 'Patrimonio y largo plazo', corto: 'Patrimonio', tecla: '7' },
     { id: 'escenarios', nombre: 'Escenarios', tecla: '8' },
     { id: 'ajustes', nombre: 'Ajustes', tecla: '9' }
@@ -148,7 +147,6 @@ var PFApp = (function () {
     inversiones: 'Proyección por activo y total con tres escenarios. Estimaciones, no garantías.',
     deudas: 'Cuadro de amortización, amortización anticipada y estrategias.',
     huchas: 'Ahorro finalista para gastos anuales y objetivos con fecha.',
-    compartido: 'Vuestro Tricount: quién pagó qué y quién debe a quién. Enter añade el gasto.',
     patrimonio: 'Patrimonio neto proyectado hasta 40 años y seguimiento real frente al plan.',
     escenarios: 'Guarda versiones completas de tu plan y compáralas.',
     ajustes: 'Hipótesis por defecto, impuestos, apariencia y copias de seguridad.'
@@ -168,7 +166,7 @@ var PFApp = (function () {
   // ------------------------------------------- Pestañas inferiores (móvil) ---
   var PESTANAS = [
     { id: 'resumen', nombre: 'Resumen', ico: 'inicio' }, { id: 'presupuesto', nombre: 'Presupuesto', ico: 'tabla' },
-    { id: 'huchas', nombre: 'Huchas', ico: 'hucha' }, { id: 'compartido', nombre: 'En pareja', ico: 'pareja' }
+    { id: 'huchas', nombre: 'Huchas', ico: 'hucha' }, { id: 'inversiones', nombre: 'Inversiones', ico: 'inversion' }
   ];
   function htmlTabbar(c) {
     var enPestana = PESTANAS.some(function (t) { return t.id === c.ui.seccion; });
@@ -304,9 +302,9 @@ var PFApp = (function () {
   }
   function mostrarAtajos() {
     var filas = [
-      ['1 – 9 y 0', 'Ir a cada sección (3 activa ¿Y si…?, 0 gastos en pareja)'], ['W', 'Activar / salir del modo ¿Y si…?'], ['N', 'Nueva partida'],
+      ['1 – 9', 'Ir a cada sección (3 activa ¿Y si…?)'], ['W', 'Activar / salir del modo ¿Y si…?'], ['N', 'Nueva partida'],
       ['Ctrl + Z / Ctrl + Y', 'Deshacer / rehacer'], ['Ctrl + S', 'Guardar en archivo'], ['Ctrl + O', 'Abrir archivo'],
-      ['Flechas', 'Moverse por la tabla del presupuesto'], ['Enter / F2 / escribir', 'Editar la celda'], ['Enter', 'Confirmar y bajar'],
+      ['Flechas', 'Moverse por la tabla del presupuesto'], ['Enter / F2 / escribir', 'Editar la celda'], ['+', 'Sumar otro gasto a lo que ya hay en la celda'], ['Enter', 'Confirmar y bajar'],
       ['Tab / Mayús + Tab', 'Confirmar y moverse a la derecha / izquierda'], ['Mayús + Enter', 'Usar el importe como regla para todos los meses'],
       ['Supr', 'Quitar el ajuste de la celda (vuelve a la regla)'], ['Esc', 'Cancelar edición / cerrar panel'], ['?', 'Esta ayuda']
     ];
@@ -371,6 +369,7 @@ var PFApp = (function () {
     if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { temaAplicado = undefined; render(); });
     window.addEventListener('resize', function () { render(); });
     if (PFStore.info.error) U.toast(PFStore.info.error, { tipo: 'error', ms: 8000 });
+    if (!PFUI.secciones[PFStore.getUI().seccion]) PFStore.setUI({ seccion: 'presupuesto' }); // la sección guardada ya no existe
     renderAhora();
     if (window.PFNube) PFNube.iniciar();
   }

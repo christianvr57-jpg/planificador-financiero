@@ -364,7 +364,8 @@ var PFPresupuesto = (function () {
   }
 
   // ------------------------------------------------------------- Edición ---
-  function empezar(key, j, inicial) {
+  /** seguir: mantiene lo que hay en la celda y añade un «+» para sumarle otro gasto. */
+  function empezar(key, j, inicial, seguir) {
     var c = PFApp.ctx(), u = opciones(c);
     var desde = ventanaBase(c, u) + 12 * u.offset, a = desde + j;
     var V = u.vista === 'hogar' ? 'hogar' : 'mi';
@@ -374,7 +375,7 @@ var PFPresupuesto = (function () {
       var va = valorActual(c, key, a, V), ent = buscar(c.esc, key).ent;
       var formulaVale = va.f && (V === 'hogar' || !(ent.miParte < 1));
       texto = formulaVale ? va.f : (va.v ? F.numero(va.v / 100, 2) : '');
-      sel = true;
+      if (seguir) { if (texto) texto += '+'; } else sel = true;
     }
     edit = { key: key, j: j, texto: texto, nuevo: true, seleccionar: sel };
     foco = { key: key, j: j };
@@ -391,7 +392,7 @@ var PFPresupuesto = (function () {
     var c = PFApp.ctx(), u = opciones(c), V = u.vista === 'hogar' ? 'hogar' : 'mi';
     var key = edit.key, j = edit.j;
     var desde = ventanaBase(c, u) + 12 * u.offset, a = desde + j, ms = C.ymStr(a);
-    var limpio = String(texto).trim();
+    var limpio = String(texto).trim().replace(/[-+*/\s]+$/, '');
     var v = limpio === '' ? null : F.leerImporte(limpio);
     if (limpio !== '' && v == null) {
       edit.texto = texto;
@@ -491,7 +492,8 @@ var PFPresupuesto = (function () {
       }
       if (e.key === 'Enter' || e.key === 'F2') { e.preventDefault(); if (ed) empezar(key, j); else moverFoco(td, 'abajo'); return; }
       if ((e.key === 'Delete' || e.key === 'Backspace') && ed) { e.preventDefault(); quitarAjuste(key, j); return; }
-      if (ed && e.key.length === 1 && /[0-9,.\-+=(]/.test(e.key)) { e.preventDefault(); empezar(key, j, e.key); return; }
+      if (ed && e.key === '+') { e.preventDefault(); empezar(key, j, null, true); return; }
+      if (ed && e.key.length === 1 && /[0-9,.\-=(]/.test(e.key)) { e.preventDefault(); empezar(key, j, e.key); return; }
     });
     document.addEventListener('focusin', function (e) {
       var td = e.target.closest && e.target.closest('.bt td[data-k]');

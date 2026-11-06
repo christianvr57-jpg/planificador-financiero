@@ -192,7 +192,7 @@ var PFPerfiles = (function () {
     pantalla('<h1 id="lock-t">¿Quién eres?</h1><div class="lock-perfiles">' + PERFILES.map(function (d) {
       var tiene = !!localStorage.getItem(K_PERFIL + d.id);
       return '<button type="button" class="lock-p" data-perfil="' + d.id + '">' + avatar(d) + '<span><b>' + h(d.nombre) + '</b><small>' + (tiene ? 'Entrar con contraseña' : 'Entrar') + '</small></span></button>';
-    }).join('') + '</div><p class="lock-nota">Cada perfil tiene su contraseña y sus datos cifrados. Los gastos en pareja son comunes a los dos.</p>');
+    }).join('') + '</div><p class="lock-nota">Cada perfil tiene su contraseña y sus datos cifrados.</p>');
     var b = raiz.querySelector('.lock-p'); if (b) b.focus();
   }
   function pintarClave(def, modo, error) {

@@ -6,7 +6,7 @@ Web de una sola página para unificar ingresos, gastos, huchas, inversiones y de
 
 **Móvil:** se adapta al iPhone (pestañas abajo y el resto de secciones en «Más»; en el presupuesto, toca una celda para editarla y el nombre de la partida para ver sus opciones). En Safari, *Compartir › Añadir a pantalla de inicio* la deja como una app.
 
-**Perfiles:** al abrir la web se elige perfil (Christian o Maribel) y se escribe su contraseña. Los datos de cada perfil se guardan cifrados (AES-GCM, clave derivada de la contraseña con PBKDF2), en el navegador y en la nube: sin la contraseña no se pueden leer. Si se olvida, no hay forma de recuperarlos, así que conviene guardar de vez en cuando una copia en archivo (Ctrl+S). Los «Gastos en pareja» son comunes a los dos perfiles y se fusionan solos. La sesión dura mientras la pestaña esté abierta; el candado de la barra lateral cambia de perfil.
+**Perfiles:** al abrir la web se elige perfil (Christian o Maribel) y se escribe su contraseña. Los datos de cada perfil se guardan cifrados (AES-GCM, clave derivada de la contraseña con PBKDF2), en el navegador y en la nube: sin la contraseña no se pueden leer. Si se olvida, no hay forma de recuperarlos, así que conviene guardar de vez en cuando una copia en archivo (Ctrl+S). La sesión dura mientras la pestaña esté abierta; el candado de la barra lateral cambia de perfil.
 
 **Nube:** cada cambio se guarda en la rama `datos` de este repositorio (`perfiles/<perfil>.json` cifrado y `compartido.json`) (cada guardado es un commit, así que el historial de la rama guarda todas las versiones). Al abrir la página, al volver a la pestaña y cada 30 s se cargan los cambios hechos en otro PC; si hay cambios en los dos sitios, la app pregunta con cuál quedarse.
 
@@ -29,7 +29,6 @@ Para poder guardar en la nube, cada navegador necesita un token (leer no lo nece
 | 4 | Inversiones |
 | 5 | Deudas |
 | 6 | Huchas y objetivos |
-| 0 | Gastos en pareja (vuestro Tricount: quién pagó, quién debe, importar CSV de Tricount) |
 | 7 | Patrimonio y largo plazo |
 | 8 | Escenarios |
 | 9 | Ajustes |
@@ -39,7 +38,7 @@ Otros atajos: `N` nueva partida · `Ctrl+Z` / `Ctrl+Y` deshacer y rehacer · `Ct
 En la tabla del presupuesto:
 - **Moverse:** flechas o Tab.
 - **Editar:** Enter, F2 o empezar a escribir.
-- **Sumar varios gastos en un mes:** escribe `40+25,50`.
+- **Sumar varios gastos en un mes:** escribe `40+25,50`, o pulsa `+` sobre una celda para añadir otro gasto a lo que ya tiene.
 - **Aplicar el importe a todos los meses:** Mayús+Enter.
 - **Volver a la regla:** Supr.
 - **Cambiar un gasto de grupo:** arrástralo por el asa (⠿, a la izquierda del interruptor) a otro grupo, entre dos filas para reordenar, o sobre una hucha para que se pague desde ella.
@@ -65,7 +64,7 @@ js/store.js           estado, deshacer/rehacer, autoguardado, copias
 js/perfiles.js        perfiles, contraseña, cifrado y pantalla de acceso
 js/cloud.js           sincronización con GitHub (rama «datos»)
 js/whatif.js          modo ¿Y si…?
-js/tricount.js        gastos compartidos: saldos, liquidaciones e importación CSV
+js/tricount.js        libro de gastos compartidos (sin sección en la interfaz; sus datos se conservan)
 js/ui-*.js, app.js    interfaz
 tests/run-tests.js    pruebas
 docs/MODELO-DATOS.md  modelo de datos y definiciones de cálculo

@@ -149,7 +149,7 @@ Si cuota, capital y TIN no cuadran exactamente, manda la cuota del recibo y el p
 
 ## Gastos en pareja (Compartido)
 
-Libro de gastos compartidos, al estilo Tricount. Es vida real, así que no depende del escenario.
+Libro de gastos compartidos, al estilo Tricount. Es vida real, así que no depende del escenario. La sección de la interfaz se quitó; los datos se conservan y se siguen sincronizando.
 
 ```js
 {

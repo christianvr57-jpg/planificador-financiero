@@ -91,7 +91,7 @@ var PFFmt = (function () {
    */
   function evaluar(txt) {
     if (txt == null) return null;
-    var s = String(txt).trim().replace(/^=/, '').replace(/−/g, '-').replace(/[×x]/g, '*').replace(/÷/g, '/');
+    var s = String(txt).trim().replace(/^=/, '').replace(/−/g, '-').replace(/[×x]/g, '*').replace(/÷/g, '/').replace(/[-+*/\s]+$/, ''); // "40+" a medio escribir vale 40
     if (!s) return null;
     var toks = [], re = /\s*([0-9][0-9.,]*|[-+*/()])\s*/g, m, pos = 0;
     while ((m = re.exec(s)) && m.index === pos) { toks.push(m[1]); pos = re.lastIndex; }

@@ -73,7 +73,7 @@ var PFAjustes = (function () {
   function perfil() {
     var p = PFPerfiles.activo();
     return '<div class="card"><div class="card-h"><h3>Perfil de ' + h(p.nombre) + '</h3><button type="button" class="btn sm" data-act="perfil-salir">' + U.icono('candado') + 'Cambiar de perfil</button></div>' +
-      '<p class="nota" style="margin-bottom:10px">Tus datos se guardan cifrados con tu contraseña, en este navegador y en la nube. Los gastos en pareja son comunes a los dos perfiles.</p>' +
+      '<p class="nota" style="margin-bottom:10px">Tus datos se guardan cifrados con tu contraseña, en este navegador y en la nube.</p>' +
       '<div class="fila-ctl"><input class="in" type="password" id="pf-actual" placeholder="Contraseña actual" autocomplete="current-password" style="width:170px" aria-label="Contraseña actual">' +
       '<input class="in" type="password" id="pf-nueva1" placeholder="Nueva" autocomplete="new-password" style="width:140px" aria-label="Contraseña nueva">' +
       '<input class="in" type="password" id="pf-nueva2" placeholder="Repite la nueva" autocomplete="new-password" style="width:140px" aria-label="Repite la contraseña nueva">' +

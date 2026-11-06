@@ -26,6 +26,13 @@ function ahorroAnual(e) { return C.suma(C.simular(e, { meses: 12 }).m.ahorro, 0,
 
 console.log('\nPruebas de aceptación');
 
+test('Un «+» al final de una suma a medio escribir no invalida el importe', function () {
+  var Fm = require('../js/fmt.js');
+  cierto(Fm.leerImporte('1.700,00+') === 170000, 'importe con + final');
+  cierto(Fm.leerImporte('1.700,00+60') === 176000, 'suma sobre un importe con miles');
+  cierto(Fm.leerImporte('+') === null, 'solo el signo no es un importe');
+});
+
 test('El grupo TRICOUNT se conserva al normalizar una partida', function () {
   cierto(S.partida({ tipo: 'gasto', grupo: 'tricount' }).grupo === 'tricount', 'el grupo TRICOUNT se conserva');
   cierto(S.GRUPOS.some(function (g) { return g.nombre === 'TRICOUNT'; }), 'aparece entre los grupos');
